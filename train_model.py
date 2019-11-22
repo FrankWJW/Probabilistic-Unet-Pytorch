@@ -5,10 +5,18 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from load_LIDC_data import LIDC_IDRI
 from probabilistic_unet import ProbabilisticUnet
 from utils import l2_regularisation
+import os
+
+data_dir = 'D:\\LIDC\\data\\'
+output_dir = 'D:\LIDC\LIDC-IDRI-out_final'
+def save_data_set(dataset):
+    # TODO: build this function to save all data in png format
+    return
 
 def train():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    dataset = LIDC_IDRI(dataset_location = 'D:\\LIDC\\data\\')
+    dataset = LIDC_IDRI(dataset_location = data_dir)
+    save_data_set(dataset)
     dataset_size = len(dataset)
     indices = list(range(dataset_size))
     split = int(np.floor(0.1 * dataset_size))
@@ -19,7 +27,6 @@ def train():
     train_loader = DataLoader(dataset, batch_size=5, sampler=train_sampler)
     test_loader = DataLoader(dataset, batch_size=1, sampler=test_sampler)
     print("Number of training/test patches:", (len(train_indices),len(test_indices)))
-
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32,64,128,192], latent_dim=2, no_convs_fcomb=4, beta=10.0)
     net.to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=1e-4, weight_decay=0)

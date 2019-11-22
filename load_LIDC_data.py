@@ -7,7 +7,7 @@ import random
 import pickle
 import matplotlib.pyplot as plt
 
-output_dir = 'D:\LIDC\LIDC-IDRI-out_final'
+
 
 
 class LIDC_IDRI(Dataset):
@@ -33,7 +33,6 @@ class LIDC_IDRI(Dataset):
                 data.update(new_data)
         
         for key, value in data.items():
-            # plt.savefig(os.path.join(output_dir, value['image']))
             self.images.append(value['image'].astype(float))
             self.labels.append(value['masks'])
             self.series_uid.append(value['series_uid'])
