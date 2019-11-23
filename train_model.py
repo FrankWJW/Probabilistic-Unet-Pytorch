@@ -6,17 +6,20 @@ from load_LIDC_data import LIDC_IDRI
 from probabilistic_unet import ProbabilisticUnet
 from utils import l2_regularisation
 import os
+import imageio
 
 data_dir = 'D:\\LIDC\\data\\'
 output_dir = 'D:\LIDC\LIDC-IDRI-out_final'
-def save_data_set(dataset):
-    # TODO: build this function to save all data in png format
-    return
 
-def train():
+def save_data_set(dataset):
+    for k, np_img in enumerate(dataset.images):
+        imageio.imwrite(os.path.join(output_dir, 'image_'+str(k)+'.png'), np_img)
+        for k_l, np_label in enumerate(dataset.labels[k]):
+            imageio.imwrite(os.path.join(output_dir, 'image_'+str(k)+'label_'+str(k_l)+'.png'), np_label*255)
+
+
+def train(dataset):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    dataset = LIDC_IDRI(dataset_location = data_dir)
-    save_data_set(dataset)
     dataset_size = len(dataset)
     indices = list(range(dataset_size))
     split = int(np.floor(0.1 * dataset_size))
@@ -46,4 +49,6 @@ def train():
 
 
 if __name__ == '__main__':
+    dataset = LIDC_IDRI(dataset_location=data_dir)
+    # save_data_set(dataset)
     train()
