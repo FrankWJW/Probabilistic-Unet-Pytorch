@@ -1,9 +1,7 @@
 #This code is based on: https://github.com/SimonKohl/probabilistic_unet
 
-from unet_blocks import *
-from unet import Unet
-from utils import init_weights,init_weights_orthogonal_normal, l2_regularisation
-import torch.nn.functional as F
+from unet.unet_blocks import *
+from utils import init_weights,init_weights_orthogonal_normal
 from torch.distributions import Normal, Independent, kl
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

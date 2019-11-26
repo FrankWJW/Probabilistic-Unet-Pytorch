@@ -1,14 +1,11 @@
 import torch
-import numpy as np
-from torch.utils.data import DataLoader
-from torch.utils.data.sampler import SubsetRandomSampler
-from load_LIDC_data import LIDC_IDRI
+from dataset.load_LIDC_data import LIDC_IDRI
 from probabilistic_unet import ProbabilisticUnet
 from utils import l2_regularisation
 from tqdm import tqdm
 import os
 import imageio
-from dataloader import Dataloader
+from dataset.dataloader import Dataloader
 
 # paras for training
 data_dir = 'D:\\LIDC\\data\\'
