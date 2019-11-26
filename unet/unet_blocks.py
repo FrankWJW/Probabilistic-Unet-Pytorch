@@ -11,11 +11,14 @@ class SequentialConv(nn.Module):
         super().__init__()
         self.layers = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
-            # nn.BatchNorm2d(out_channels),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True),
             nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
-            # nn.BatchNorm2d(out_channels),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True),
             nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
-            # nn.BatchNorm2d(out_channels),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True),
         )
 
     def forward(self, patch):
@@ -27,7 +30,6 @@ class DownConvBlock(nn.Module):
     A block of three convolutional layers where each layer is followed by a non-linear activation function
     Between each block we add a pooling operation.
 
-    Convolution * 3, no ReLu and Batch norm
     """
     def __init__(self, in_channels, out_channels):
         super().__init__()
@@ -45,7 +47,6 @@ class UpConvBlock(nn.Module):
     A block consists of an upsampling layer followed by a convolutional layer to reduce the amount of channels and then a DownConvBlock
     If bilinear is set to false, we do a transposed convolution instead of upsampling
 
-    Convolution * 3, no ReLu and Batch norm
     """
     def __init__(self, in_channels, out_channels, bilinear=True):
         super().__init__()

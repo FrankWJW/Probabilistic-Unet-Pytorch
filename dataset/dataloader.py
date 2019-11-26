@@ -2,12 +2,17 @@ import torch
 import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
+import math
 
 class Dataloader():
-    def __init__(self, dataset, batch_size):
+    def __init__(self, dataset, batch_size, small=True):
         self.batch_size = batch_size
         self.dataset = dataset
-        self.dataset_size = len(dataset)
+        # take small amount of data for fast training
+        if small == True:
+            self.dataset_size = math.floor(len(dataset)/100)
+        else:
+            self.dataset_size = len(dataset)
         self.indices = list(range(self.dataset_size))
         np.random.shuffle(self.indices)
         self.split = int(np.floor(0.1 * self.dataset_size))

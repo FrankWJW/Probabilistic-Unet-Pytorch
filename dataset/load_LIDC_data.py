@@ -9,12 +9,11 @@ import matplotlib.pyplot as plt
 
 
 
-
 class LIDC_IDRI(Dataset):
     images = []
     labels = []
     series_uid = []
-
+# TODO： transform
     def __init__(self, dataset_location, transform=None):
         self.transform = transform
         max_bytes = 2**31 - 1
