@@ -26,12 +26,16 @@ lr = 1e-2
 weight_decay = 1e-5
 epochs = 300
 partial_data = True
-
+resume = True
+resume_dir = 'D:\Probablistic-Unet-Pytorch-out\ckpt\CKPT_epoch_unet_41.pth'
 
 def train(data):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     net = UNet(in_channels=1, n_classes=1, bilinear=True).to(device)
+    if resume:
+        print('loading checkpoint model to resume...')
+        net.load_state_dict(torch.load(resume_dir))
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
     criterion = nn.BCEWithLogitsLoss()
     milestones = list(range(0, epochs, int(epochs/5)))
@@ -60,7 +64,7 @@ def train(data):
 
                 pbar.update(batch_size)
 
-                torch.save(net.state_dict(), os.path.join(dir_checkpoint, f'CKPT_epoch_unet_{epoch + 1}.pth'))
+        torch.save(net.state_dict(), os.path.join(dir_checkpoint, f'CKPT_epoch{epoch + 1}_unet_loss_{total_loss}.pth'))
 
 
 def eval(data):
