@@ -1,7 +1,6 @@
 import torch
 from dataset.load_LIDC_data import LIDC_IDRI
 from unet.unet import UNet
-from utils import l2_regularisation
 from tqdm import tqdm
 import os
 import imageio
@@ -21,11 +20,11 @@ recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation'
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 1
+batch_size = 32
 lr = 1e-4
-# lr_range = [1e-4, 0.5e-4, 1e-5, 0.5e-6]
 weight_decay = 1e-5
 epochs = 300
+partial_data = True
 
 
 def train(data):
@@ -66,7 +65,6 @@ def eval(data):
     net.eval()
     with torch.no_grad():
         with tqdm (total=len(data.test_indices), unit='patch') as pbar:
-            # TODO: find out which one is the ground true mask
             for step, (patch, mask, _) in enumerate(data.test_loader):
                 patch = patch.to(device)
                 mask = mask.to(device)
@@ -82,6 +80,6 @@ def eval(data):
 
 if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir)
-    dataloader = Dataloader(dataset, batch_size, small=True)
+    dataloader = Dataloader(dataset, batch_size, small=partial_data)
     train(dataloader)
     eval(dataloader)

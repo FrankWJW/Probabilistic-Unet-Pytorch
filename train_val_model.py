@@ -1,7 +1,7 @@
 import torch
 from dataset.load_LIDC_data import LIDC_IDRI
-from probabilistic_unet import ProbabilisticUnet
-from utils import l2_regularisation
+from prob_unet.probabilistic_unet import ProbabilisticUnet
+from utils.utils import l2_regularisation
 from tqdm import tqdm
 import os
 import imageio
@@ -88,6 +88,6 @@ def eval(data):
 if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir)
     # save_data_set(dataset)
-    loaded_data = Dataloader(dataset, batch_size)
+    loaded_data = Dataloader(dataset, batch_size, small=True)
     train(loaded_data)
     # eval(loaded_data)

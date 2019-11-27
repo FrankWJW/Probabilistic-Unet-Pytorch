@@ -6,6 +6,7 @@ from .unet_blocks import *
 
 
 class UNet(nn.Module):
+    # TODO: check structure
     def __init__(self, in_channels, n_classes, num_filters=[32,64,128,192], bilinear=True):
         super(UNet, self).__init__()
         self.in_channels = in_channels
