@@ -21,8 +21,8 @@ recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation'
 # hyper para
 # TODO: hyper para tuning
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 8
-lr = 1e-4
+batch_size = 1
+lr = 1e-2
 weight_decay = 1e-5
 epochs = 300
 partial_data = True
@@ -37,8 +37,9 @@ def train(data):
     milestones = list(range(0, epochs, int(epochs/5)))
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.4)
 
+    net.train()
     for epoch in range(epochs):
-        net.train()
+
         total_loss = 0
         with tqdm(total=len(data.train_indices), desc=f'Epoch {epoch + 1}/{epochs}', unit='patch') as pbar:
             for step, (patch, mask, _) in enumerate(data.train_loader):
@@ -54,6 +55,7 @@ def train(data):
 
                 optimizer.zero_grad()
                 loss.backward()
+                optimizer.step()
                 scheduler.step()
 
                 pbar.update(batch_size)
