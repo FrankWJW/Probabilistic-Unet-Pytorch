@@ -6,28 +6,36 @@ import os
 import imageio
 import torch.nn as nn
 from dataset.dataloader import Dataloader
+from torchvision import transforms
 
-# paras for training
+
+# dirs for training
 data_dir = 'D:\\LIDC\\data\\'
 output_dir = 'D:\LIDC\LIDC-IDRI-out_final'
 unet_seg_outdir = 'D:\Probablistic-Unet-Pytorch-out\\unet_only_seg'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
 
-# paras for eval and output
-model_dir = 'D:\Probablistic-Unet-Pytorch-out\ckpt\CKPT_epoch_unet_300.pth'
+# dirs for eval and output
+model_dir = 'D:\Probablistic-Unet-Pytorch-out\ckpt\CKPT_epoch293_unet_loss_2.8789007321101963.pth'
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation'
 
 # hyper para
-# TODO: hyper para tuning
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 1
-lr = 1e-2
+batch_size = 32
+lr = 1e-4
 weight_decay = 1e-5
 epochs = 300
-partial_data = True
-resume = True
-resume_dir = 'D:\Probablistic-Unet-Pytorch-out\ckpt\CKPT_epoch_unet_41.pth'
+partial_data = False
+resume = False
+resume_dir = 'D:\Probablistic-Unet-Pytorch-out\ckpt\CKPT_epoch293_unet_loss_2.8789007321101963.pth'
+
+transfm = [None]
+# TODO: transforms
+#random elastic deformation, rotation, shearing, scaling and a randomly
+#translated crop that results in a tile size of 128 × 128 pixels
+
+
 
 def train(data):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -38,7 +46,7 @@ def train(data):
         net.load_state_dict(torch.load(resume_dir))
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
     criterion = nn.BCEWithLogitsLoss()
-    milestones = list(range(0, epochs, int(epochs/5)))
+    milestones = list(range(0, epochs, int(epochs/4)))
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.4)
 
     net.train()
@@ -87,7 +95,7 @@ def eval(data):
 
 
 if __name__ == '__main__':
-    dataset = LIDC_IDRI(dataset_location=data_dir)
+    dataset = LIDC_IDRI(dataset_location=data_dir, transform=transforms.Compose(transfm))
     dataloader = Dataloader(dataset, batch_size, small=partial_data)
     train(dataloader)
-    eval(dataloader)
+    # eval(dataloader)
