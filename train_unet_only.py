@@ -19,8 +19,9 @@ model_dir = 'D:\Probablistic-Unet-Pytorch-out\ckpt\CKPT_epoch_unet_300.pth'
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation'
 
 # hyper para
+# TODO: hyper para tuning
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 32
+batch_size = 8
 lr = 1e-4
 weight_decay = 1e-5
 epochs = 300
@@ -33,7 +34,8 @@ def train(data):
     net = UNet(in_channels=1, n_classes=1, bilinear=True).to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
     criterion = nn.BCEWithLogitsLoss()
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[int(epochs*1/3), int(epochs*2/3)], gamma=0.1)
+    milestones = list(range(0, epochs, int(epochs/5)))
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.4)
 
     for epoch in range(epochs):
         net.train()

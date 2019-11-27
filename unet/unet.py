@@ -20,8 +20,8 @@ class UNet(nn.Module):
         self.down3 = DownConvBlock(128, 192)
         self.down4 = DownConvBlock(192, 192)
         self.up1 = UpConvBlock(384, 128, bilinear)
-        self.up2 = UpConvBlock(256, 320, bilinear)
-        self.up3 = UpConvBlock(384, 32, bilinear)
+        self.up2 = UpConvBlock(256, 64, bilinear)
+        self.up3 = UpConvBlock(128, 32, bilinear)
         self.up4 = UpConvBlock(64, 32, bilinear)
         self.outc = OutConv(32, n_classes)
 

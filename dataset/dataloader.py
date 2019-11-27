@@ -10,7 +10,7 @@ class Dataloader():
         self.dataset = dataset
         # take small amount of data for fast training
         if small == True:
-            self.dataset_size = math.floor(len(dataset)/100)
+            self.dataset_size = math.floor(len(dataset)/50)
         else:
             self.dataset_size = len(dataset)
         self.indices = list(range(self.dataset_size))
