@@ -3,6 +3,8 @@
 from unet.unet_blocks import *
 from utils.utils import init_weights,init_weights_orthogonal_normal
 from torch.distributions import Normal, Independent, kl
+from unet.unet import UNet
+import numpy as np
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -197,7 +199,7 @@ class ProbabilisticUnet(nn.Module):
         self.beta = beta
         self.z_prior_sample = 0
 
-        self.unet = Unet(self.input_channels, self.num_classes, self.num_filters, self.initializers, apply_last_layer=False, padding=True).to(device)
+        self.unet = UNet(self.input_channels, self.num_classes, self.num_filters, self.initializers, apply_last_layer=False, padding=True).to(device)
         self.prior = AxisAlignedConvGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim,  self.initializers,).to(device)
         self.posterior = AxisAlignedConvGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, posterior=True).to(device)
         self.fcomb = Fcomb(self.num_filters, self.latent_dim, self.input_channels, self.num_classes, self.no_convs_fcomb, {'w':'orthogonal', 'b':'normal'}, use_tile=True).to(device)
