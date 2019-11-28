@@ -7,6 +7,7 @@ import random
 import pickle
 import matplotlib.pyplot as plt
 import imageio
+from PIL import Image
 
 
 class LIDC_IDRI(Dataset):
@@ -14,8 +15,10 @@ class LIDC_IDRI(Dataset):
     labels = []
     series_uid = []
 
-    def __init__(self, dataset_location, transform=None):
-        self.transform = transform
+    def __init__(self, dataset_location, joint_transform=None, input_transform=None, target_transform=None):
+        self.input_transform = input_transform
+        self.joint_transform = joint_transform
+        self.target_transform = target_transform
         max_bytes = 2 ** 31 - 1
         data = {}
         for file in os.listdir(dataset_location):
@@ -47,18 +50,24 @@ class LIDC_IDRI(Dataset):
         del data
 
     def __getitem__(self, index):
-        image = np.expand_dims(self.images[index], axis=0)
+
+        image = self.images[index]
 
         # Randomly select one of the four labels for this image
         label = self.labels[index][random.randint(0, 3)].astype(float)
-        if self.transform is not None:
-            image = self.transform(image)
-
+        if self.input_transform is not None:
+            image = np.uint8(image*255)
+            label = np.uint8(label*255)
+            image = self.input_transform(image)
+            label = self.input_transform(label)
+        if self.joint_transform is not None:
+            image, label = self.joint_transform(image, label)
+            image = np.array(image)
+            label = np.array(label)
+        if self.target_transform is not None:
+            image = self.target_transform(image)
+            label = self.target_transform(label)
         series_uid = self.series_uid[index]
-
-        # Convert image and label to torch tensors
-        image = torch.from_numpy(image)
-        label = torch.from_numpy(label)
 
         # Convert uint8 to float tensors
         image = image.type(torch.FloatTensor)

@@ -6,8 +6,9 @@ import os
 import imageio
 import torch.nn as nn
 from dataset.dataloader import Dataloader
-from torchvision import transforms
 
+from torchvision import transforms
+import utils.joint_transforms as joint_transforms
 
 
 
@@ -34,11 +35,11 @@ resume = False
 eval_model = os.path.join(dir_checkpoint, model_eval)
 r_model = os.path.join(dir_checkpoint, resume_model)
 
-transfm = transforms.Compose([transforms.ToPILImage(),
-                              transforms.RandomRotation([0, 60.0]),
-                              transforms.RandomHorizontalFlip(),
-                              transforms.RandomAffine(degrees=[0,45], shear=[0, 45], scale=[1, 2]),
-                              transforms.ToTensor()])
+joint_transfm = joint_transforms.Compose([joint_transforms.RandomHorizontallyFlip(),
+                                          joint_transforms.RandomSizedCrop(128),
+                                          joint_transforms.RandomRotate(60)])
+input_transfm = transforms.Compose([transforms.ToPILImage()])
+target_transfm = transforms.Compose([transforms.ToTensor()])
 
 # TODO: transforms
 # random elastic deformation, rotation, shearing, scaling and a randomly
@@ -70,7 +71,7 @@ def train(data):
             for step, (patch, mask, _) in enumerate(data.train_loader):
                 patch = patch.to(device)
                 mask = mask.to(device)
-                mask = torch.unsqueeze(mask,1)
+
                 patch_pred = net(patch)
 
                 loss = criterion(patch_pred, mask)
@@ -120,7 +121,8 @@ def save_checkpoint(state, save_path, filename):
 
 
 if __name__ == '__main__':
-    dataset = LIDC_IDRI(dataset_location=data_dir, transform=transfm)
+    dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm, input_transform=input_transfm
+                        , target_transform=target_transfm)
     # dataset.save_data_set(data_save_dir)
     dataloader = Dataloader(dataset, batch_size, small=partial_data)
     train(dataloader)
