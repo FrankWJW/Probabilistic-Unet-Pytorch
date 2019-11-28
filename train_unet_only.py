@@ -9,16 +9,16 @@ from dataset.dataloader import Dataloader
 from torchvision import transforms
 
 
-# dirs for training
-data_dir = 'D:\\LIDC\\data\\'
-output_dir = 'D:\LIDC\LIDC-IDRI-out_final'
-unet_seg_outdir = 'D:\Probablistic-Unet-Pytorch-out\\unet_only_seg'
+
+
+# dirs
+data_dir = 'D:\LIDC\data'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
-
-
-# dirs for eval and output
-model_dir = 'D:\Probablistic-Unet-Pytorch-out\ckpt\CKPT_epoch168_unet_loss_12.697673916816711.pth'
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation'
+
+# model for resume training and eval
+model_eval = 'CKPT_epoch168_unet_loss_12.697673916816711.pth'
+resume_model = 'checkpoint_epoch0_totalLoss_178.5162927210331.pth.tar'
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -28,7 +28,10 @@ weight_decay = 1e-5
 epochs = 300
 partial_data = False
 resume = True
-resume_dir = 'D:\Probablistic-Unet-Pytorch-out\ckpt\checkpoint_epoch0_totalLoss_178.5162927210331.pth.tar'
+
+
+eval_model = os.path.join(dir_checkpoint, model_eval)
+r_model = os.path.join(dir_checkpoint, resume_model)
 
 transfm = []
 # TODO: transforms
@@ -45,7 +48,7 @@ def train(data):
 
     if resume:
         print('loading checkpoint model to resume...')
-        resume_dict = torch.load(resume_dir)
+        resume_dict = torch.load(r_model)
         net.load_state_dict(resume_dict['state_dict'])
         optimizer.load_state_dict(resume_dict['optimizer'])
         scheduler.load_state_dict(resume_dict['scheduler'])
@@ -86,8 +89,9 @@ def train(data):
 
 def eval(data):
     net = UNet(in_channels=1, n_classes=1, bilinear=True).to(device)
-    load_dict = torch.load(resume_dir)
+    load_dict = torch.load(eval_model)
     net.load_state_dict(load_dict['state_dict'])
+    # net.load_state_dict(load_dict)
     net.eval()
     with torch.no_grad():
         with tqdm (total=len(data.test_indices), unit='patch') as pbar:
@@ -112,5 +116,5 @@ def save_checkpoint(state, save_path, filename):
 if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, transform=transforms.Compose(transfm))
     dataloader = Dataloader(dataset, batch_size, small=partial_data)
-    train(dataloader)
-    # eval(dataloader)
+    # train(dataloader)
+    eval(dataloader)

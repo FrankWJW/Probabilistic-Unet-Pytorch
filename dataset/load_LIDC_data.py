@@ -22,7 +22,7 @@ class LIDC_IDRI(Dataset):
             filename = os.fsdecode(file)
             if '.pickle' in filename:
                 print("Loading file", filename)
-                file_path = dataset_location + filename
+                file_path = os.path.join(dataset_location, filename)
                 bytes_in = bytearray(0)
                 input_size = os.path.getsize(file_path)
                 with open(file_path, 'rb') as f_in:
