@@ -22,11 +22,7 @@ model_dir = 'D:\Probablistic-Unet-Pytorch-out\ckpt\CKPT_epoch1.pth'
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction'
 
-def save_data_set(dataset):
-    for k, np_img in enumerate(dataset.images):
-        imageio.imwrite(os.path.join(output_dir, 'image_'+str(k)+'.png'), np_img)
-        for k_l, np_label in enumerate(dataset.labels[k]):
-            imageio.imwrite(os.path.join(output_dir, 'image_'+str(k)+'label_'+str(k_l)+'.png'), np_label*255)
+
 
 
 def train(data):
@@ -87,7 +83,6 @@ def eval(data):
 
 if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir)
-    # save_data_set(dataset)
     loaded_data = Dataloader(dataset, batch_size, small=True)
     train(loaded_data)
     # eval(loaded_data)

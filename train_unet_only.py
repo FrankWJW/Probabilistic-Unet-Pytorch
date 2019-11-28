@@ -15,6 +15,7 @@ from torchvision import transforms
 data_dir = 'D:\LIDC\data'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation'
+data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
 # model for resume training and eval
 model_eval = 'CKPT_epoch168_unet_loss_12.697673916816711.pth'
@@ -27,16 +28,21 @@ lr = 1e-4
 weight_decay = 1e-5
 epochs = 300
 partial_data = False
-resume = True
+resume = False
 
 
 eval_model = os.path.join(dir_checkpoint, model_eval)
 r_model = os.path.join(dir_checkpoint, resume_model)
 
-transfm = []
+transfm = transforms.Compose([transforms.ToPILImage(),
+                              transforms.RandomRotation([0, 60.0]),
+                              transforms.RandomHorizontalFlip(),
+                              transforms.RandomAffine(degrees=[0,45], shear=[0, 45], scale=[1, 2]),
+                              transforms.ToTensor()])
+
 # TODO: transforms
-#random elastic deformation, rotation, shearing, scaling and a randomly
-#translated crop that results in a tile size of 128 × 128 pixels
+# random elastic deformation, rotation, shearing, scaling and a randomly
+# translated crop that results in a tile size of 128 × 128 pixels
 
 
 def train(data):
@@ -114,7 +120,8 @@ def save_checkpoint(state, save_path, filename):
 
 
 if __name__ == '__main__':
-    dataset = LIDC_IDRI(dataset_location=data_dir, transform=transforms.Compose(transfm))
+    dataset = LIDC_IDRI(dataset_location=data_dir, transform=transfm)
+    # dataset.save_data_set(data_save_dir)
     dataloader = Dataloader(dataset, batch_size, small=partial_data)
-    # train(dataloader)
-    eval(dataloader)
+    train(dataloader)
+    # eval(dataloader)

@@ -6,17 +6,17 @@ import os
 import random
 import pickle
 import matplotlib.pyplot as plt
-
+import imageio
 
 
 class LIDC_IDRI(Dataset):
     images = []
     labels = []
     series_uid = []
-# TODO： transform
+
     def __init__(self, dataset_location, transform=None):
         self.transform = transform
-        max_bytes = 2**31 - 1
+        max_bytes = 2 ** 31 - 1
         data = {}
         for file in os.listdir(dataset_location):
             filename = os.fsdecode(file)
@@ -30,7 +30,7 @@ class LIDC_IDRI(Dataset):
                         bytes_in += f_in.read(max_bytes)
                 new_data = pickle.loads(bytes_in)
                 data.update(new_data)
-        
+
         for key, value in data.items():
             self.images.append(value['image'].astype(float))
             self.labels.append(value['masks'])
@@ -49,8 +49,8 @@ class LIDC_IDRI(Dataset):
     def __getitem__(self, index):
         image = np.expand_dims(self.images[index], axis=0)
 
-        #Randomly select one of the four labels for this image
-        label = self.labels[index][random.randint(0,3)].astype(float)
+        # Randomly select one of the four labels for this image
+        label = self.labels[index][random.randint(0, 3)].astype(float)
         if self.transform is not None:
             image = self.transform(image)
 
@@ -60,7 +60,7 @@ class LIDC_IDRI(Dataset):
         image = torch.from_numpy(image)
         label = torch.from_numpy(label)
 
-        #Convert uint8 to float tensors
+        # Convert uint8 to float tensors
         image = image.type(torch.FloatTensor)
         label = label.type(torch.FloatTensor)
 
@@ -69,3 +69,11 @@ class LIDC_IDRI(Dataset):
     # Override to give PyTorch size of dataset
     def __len__(self):
         return len(self.images)
+
+    def save_data_set(dataset, output_dir):
+        print('saving dataset...')
+        for k, np_img in enumerate(dataset.images):
+            imageio.imwrite(os.path.join(output_dir, 'image_' + str(k) + '.png'), np_img)
+            for k_l, np_label in enumerate(dataset.labels[k]):
+                imageio.imwrite(os.path.join(output_dir, 'image_' + str(k) + 'label_' + str(k_l) + '.png'),
+                                np_label * 255)
