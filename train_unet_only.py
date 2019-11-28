@@ -17,7 +17,7 @@ dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
 
 # dirs for eval and output
-model_dir = 'D:\Probablistic-Unet-Pytorch-out\ckpt\CKPT_epoch293_unet_loss_2.8789007321101963.pth'
+model_dir = 'D:\Probablistic-Unet-Pytorch-out\ckpt\CKPT_epoch168_unet_loss_12.697673916816711.pth'
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation'
 
 # hyper para
@@ -27,30 +27,34 @@ lr = 1e-4
 weight_decay = 1e-5
 epochs = 300
 partial_data = False
-resume = False
-resume_dir = 'D:\Probablistic-Unet-Pytorch-out\ckpt\CKPT_epoch293_unet_loss_2.8789007321101963.pth'
+resume = True
+resume_dir = 'D:\Probablistic-Unet-Pytorch-out\ckpt\checkpoint_epoch0_totalLoss_178.5162927210331.pth.tar'
 
-transfm = [None]
+transfm = []
 # TODO: transforms
 #random elastic deformation, rotation, shearing, scaling and a randomly
 #translated crop that results in a tile size of 128 × 128 pixels
 
 
-
 def train(data):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
     net = UNet(in_channels=1, n_classes=1, bilinear=True).to(device)
-    if resume:
-        print('loading checkpoint model to resume...')
-        net.load_state_dict(torch.load(resume_dir))
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
     criterion = nn.BCEWithLogitsLoss()
-    milestones = list(range(0, epochs, int(epochs/4)))
+    milestones = list(range(0, epochs, int(epochs / 4)))
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.4)
 
+    if resume:
+        print('loading checkpoint model to resume...')
+        resume_dict = torch.load(resume_dir)
+        net.load_state_dict(resume_dict['state_dict'])
+        optimizer.load_state_dict(resume_dict['optimizer'])
+        scheduler.load_state_dict(resume_dict['scheduler'])
+        epochs_trained = resume_dict['epoch']
+    else:
+        epochs_trained = 0
+
     net.train()
-    for epoch in range(epochs):
+    for epoch in range(epochs - epochs_trained):
 
         total_loss = 0
         with tqdm(total=len(data.train_indices), desc=f'Epoch {epoch + 1}/{epochs}', unit='patch') as pbar:
@@ -72,12 +76,18 @@ def train(data):
 
                 pbar.update(batch_size)
 
-        torch.save(net.state_dict(), os.path.join(dir_checkpoint, f'CKPT_epoch{epoch + 1}_unet_loss_{total_loss}.pth'))
+        save_checkpoint({
+            'epoch': epoch + 1,
+            'state_dict': net.state_dict(),
+            'optimizer': optimizer.state_dict(),
+            'scheduler': scheduler.state_dict(),
+        }, dir_checkpoint, 'checkpoint_epoch{}_totalLoss_{}.pth.tar'.format(epoch,total_loss))
 
 
 def eval(data):
     net = UNet(in_channels=1, n_classes=1, bilinear=True).to(device)
-    net.load_state_dict(torch.load(model_dir))
+    load_dict = torch.load(resume_dir)
+    net.load_state_dict(load_dict['state_dict'])
     net.eval()
     with torch.no_grad():
         with tqdm (total=len(data.test_indices), unit='patch') as pbar:
@@ -92,6 +102,11 @@ def eval(data):
                 imageio.imwrite(os.path.join(recon_dir, str(step)+'_recon.png'), recon[0].cpu().numpy().T)
 
                 pbar.update(data.batch_size)
+
+
+def save_checkpoint(state, save_path, filename):
+        filename = os.path.join(save_path, filename)
+        torch.save(state, filename)
 
 
 if __name__ == '__main__':
