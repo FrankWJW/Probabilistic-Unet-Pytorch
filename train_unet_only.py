@@ -72,6 +72,9 @@ def train(data):
                 patch = patch.to(device)
                 mask = mask.to(device)
 
+                # imageio.imwrite(os.path.join(data_save_dir, f'epoch{epoch}_step{step}_image.png'), patch[0].squeeze().cpu().numpy())
+                # imageio.imwrite(os.path.join(data_save_dir, f'epoch{epoch}_step{step}_mask.png'), mask[0].squeeze().cpu().numpy())
+
                 patch_pred = net(patch)
 
                 loss = criterion(patch_pred, mask)
@@ -118,6 +121,11 @@ def eval(data):
 def save_checkpoint(state, save_path, filename):
         filename = os.path.join(save_path, filename)
         torch.save(state, filename)
+
+
+# TODO: save_transformed_data
+def save_transformed_data():
+    return
 
 
 if __name__ == '__main__':

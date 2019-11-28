@@ -62,8 +62,6 @@ class LIDC_IDRI(Dataset):
             label = self.input_transform(label)
         if self.joint_transform is not None:
             image, label = self.joint_transform(image, label)
-            image = np.array(image)
-            label = np.array(label)
         if self.target_transform is not None:
             image = self.target_transform(image)
             label = self.target_transform(label)
@@ -86,3 +84,6 @@ class LIDC_IDRI(Dataset):
             for k_l, np_label in enumerate(dataset.labels[k]):
                 imageio.imwrite(os.path.join(output_dir, 'image_' + str(k) + 'label_' + str(k_l) + '.png'),
                                 np_label * 255)
+
+
+
