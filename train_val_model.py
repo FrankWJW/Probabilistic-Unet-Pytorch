@@ -60,9 +60,9 @@ def train(data):
                 reg_loss = l2_regularisation(net.posterior) + l2_regularisation(net.prior) + l2_regularisation(net.fcomb.layers)
                 loss = -elbo + 1e-5 * reg_loss
 
-                total_loss += loss
-                total_reg_loss += reg_loss
-                pbar.set_postfix(**{'total_loss': total_loss.item(), 'total_reg_loss' : total_reg_loss.item()})
+                total_loss += loss.item()
+                total_reg_loss += reg_loss.item()
+                pbar.set_postfix(**{'total_loss': total_loss, 'total_reg_loss' : total_reg_loss})
 
                 optimizer.zero_grad()
                 loss.backward()
