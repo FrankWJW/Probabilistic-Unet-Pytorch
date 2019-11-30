@@ -199,7 +199,7 @@ class ProbabilisticUnet(nn.Module):
         self.beta = beta
         self.z_prior_sample = 0
 
-        self.unet = UNet(self.input_channels, self.num_classes, self.num_filters).to(device)
+        self.unet = UNet(self.input_channels, self.num_classes, self.num_filters, if_last_layer=False).to(device)
         self.prior = AxisAlignedConvGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim,  self.initializers,).to(device)
         self.posterior = AxisAlignedConvGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, posterior=True).to(device)
         self.fcomb = Fcomb(self.num_filters, self.latent_dim, self.input_channels, self.num_classes, self.no_convs_fcomb, {'w':'orthogonal', 'b':'normal'}, use_tile=True).to(device)
@@ -212,7 +212,7 @@ class ProbabilisticUnet(nn.Module):
         if training:
             self.posterior_latent_space = self.posterior.forward(patch, segm)
         self.prior_latent_space = self.prior.forward(patch)
-        self.unet_features = self.unet.forward(patch,False)
+        self.unet_features = self.unet.forward(patch)
 
     def sample(self, testing=False):
         """

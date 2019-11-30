@@ -68,7 +68,6 @@ def train(data):
 
                 pbar.update(batch_size)
 
-        torch.save(net.state_dict(), os.path.join(dir_checkpoint, f'CKPT_epoch{epoch + 1}.pth'))
 
 def eval(data):
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32,64,128,192], latent_dim=latent_dim, no_convs_fcomb=4, beta=beta).to(device)
