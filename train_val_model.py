@@ -7,22 +7,39 @@ import os
 import imageio
 from dataset.dataloader import Dataloader
 
-# paras for training
-data_dir = 'D:\\LIDC\\data\\'
-output_dir = 'D:\LIDC\LIDC-IDRI-out_final'
+from torchvision import transforms
+import utils.joint_transforms as joint_transforms
+
+
+# dirs
+data_dir = 'D:\LIDC\data'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation'
+data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
+
+# model for resume training and eval
+model_eval = 'CKPT_epoch168_unet_loss_12.697673916816711.pth'
+resume_model = 'checkpoint_epoch0_totalLoss_178.5162927210331.pth.tar'
+
+# hyper para
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 batch_size = 32
 lr = 1e-4
-latent_dim = 6
-beta = 1.0
 weight_decay = 1e-5
+epochs = 300
+partial_data = False
+resume = False
+latent_dim = 6
+beta = 10.0
 
-# paras for eval
-model_dir = 'D:\Probablistic-Unet-Pytorch-out\ckpt\CKPT_epoch1.pth'
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction'
+eval_model = os.path.join(dir_checkpoint, model_eval)
+r_model = os.path.join(dir_checkpoint, resume_model)
 
-
+joint_transfm = joint_transforms.Compose([joint_transforms.RandomHorizontallyFlip(),
+                                          joint_transforms.RandomSizedCrop(128),
+                                          joint_transforms.RandomRotate(60)])
+input_transfm = transforms.Compose([transforms.ToPILImage()])
+target_transfm = transforms.Compose([transforms.ToTensor()])
 
 
 def train(data):
@@ -38,7 +55,6 @@ def train(data):
             for step, (patch, mask, _) in enumerate(data.train_loader):
                 patch = patch.to(device)
                 mask = mask.to(device)
-                mask = torch.unsqueeze(mask,1)
                 net.forward(patch, mask, training=True)
                 elbo = net.elbo(mask)
                 reg_loss = l2_regularisation(net.posterior) + l2_regularisation(net.prior) + l2_regularisation(net.fcomb.layers)
@@ -82,7 +98,9 @@ def eval(data):
                 pbar.update(data.batch_size)
 
 if __name__ == '__main__':
-    dataset = LIDC_IDRI(dataset_location=data_dir)
-    loaded_data = Dataloader(dataset, batch_size, small=True)
-    train(loaded_data)
-    # eval(loaded_data)
+    dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm, input_transform=input_transfm
+                        , target_transform=target_transfm)
+    # dataset.save_data_set(data_save_dir)
+    dataloader = Dataloader(dataset, batch_size, small=partial_data)
+    train(dataloader)
+    # eval(dataloader)
