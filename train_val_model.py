@@ -31,6 +31,7 @@ partial_data = False
 resume = False
 latent_dim = 6
 beta = 10.0
+save_ckpt = False
 
 eval_model = os.path.join(dir_checkpoint, model_eval)
 r_model = os.path.join(dir_checkpoint, resume_model)
@@ -43,14 +44,13 @@ target_transfm = transforms.Compose([transforms.ToTensor()])
 
 
 def train(data):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-    net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32,64,128,192], latent_dim=latent_dim, no_convs_fcomb=4, beta=beta)
-    net.to(device)
+    net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32,64,128,192], latent_dim=latent_dim, no_convs_fcomb=4, beta=beta).to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
-    epochs = 10
+    milestones = list(range(0, epochs, int(epochs / 4)))
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.4)
 
     for epoch in range(epochs):
+        total_loss, total_reg_loss = 0, 0
         with tqdm(total=len(data.train_indices), desc=f'Epoch {epoch + 1}/{epochs}', unit='patch') as pbar:
             for step, (patch, mask, _) in enumerate(data.train_loader):
                 patch = patch.to(device)
@@ -60,46 +60,33 @@ def train(data):
                 reg_loss = l2_regularisation(net.posterior) + l2_regularisation(net.prior) + l2_regularisation(net.fcomb.layers)
                 loss = -elbo + 1e-5 * reg_loss
 
-                pbar.set_postfix(**{'loss': loss.item(), 'reg_loss' : reg_loss})
+                total_loss += loss
+                total_reg_loss += reg_loss
+                pbar.set_postfix(**{'total_loss': total_loss.item(), 'total_reg_loss' : total_reg_loss.item()})
 
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
+                scheduler.step()
 
                 pbar.update(batch_size)
 
+        if save_ckpt and epoch%20 == 0:
+            save_checkpoint({
+                'epoch': epoch + 1,
+                'state_dict': net.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'scheduler': scheduler.state_dict(),
+            }, dir_checkpoint, 'checkpoint_epoch{}_totalLoss{}_totalRecon{}.pth.tar'.format(epoch, total_loss, total_reg_loss))
 
-def eval(data):
-    net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32,64,128,192], latent_dim=latent_dim, no_convs_fcomb=4, beta=beta).to(device)
-    net.load_state_dict(torch.load(model_dir))
-    net.eval()
-    with torch.no_grad():
-        with tqdm (total=len(data.test_indices), unit='patch') as pbar:
-            for step, (patch, mask, _) in enumerate(data.test_loader):
-                patch = patch.to(device)
-                mask = mask.to(device)
-                mask = torch.unsqueeze(mask, 1)
-                net.forward(patch, mask, training=True)
 
-                elbo = net.elbo(mask)
-                reg_loss = l2_regularisation(net.posterior) + l2_regularisation(net.prior) + l2_regularisation(
-                    net.fcomb.layers)
-                loss = -elbo + 1e-5 * reg_loss
+def save_checkpoint(state, save_path, filename):
+    filename = os.path.join(save_path, filename)
+    torch.save(state, filename)
 
-                recon = net.reconstruction
-
-                imageio.imwrite(os.path.join(recon_dir, str(step) + '_image.png'), patch[0].cpu().numpy().T)
-                imageio.imwrite(os.path.join(recon_dir, str(step) + '_mask.png'), mask[0].cpu().numpy().T)
-                imageio.imwrite(os.path.join(recon_dir, str(step)+'_recon.png'), recon[0].cpu().numpy().T)
-
-                pbar.set_postfix(**{'loss': loss.item(), 'reg_loss': reg_loss})
-
-                pbar.update(data.batch_size)
 
 if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm, input_transform=input_transfm
                         , target_transform=target_transfm)
-    # dataset.save_data_set(data_save_dir)
     dataloader = Dataloader(dataset, batch_size, small=partial_data)
     train(dataloader)
-    # eval(dataloader)
