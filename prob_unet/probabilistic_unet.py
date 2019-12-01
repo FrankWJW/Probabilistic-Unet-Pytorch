@@ -36,10 +36,12 @@ class Encoder(nn.Module):
                 layers.append(nn.AvgPool2d(kernel_size=2, stride=2, padding=0, ceil_mode=True))
             
             layers.append(nn.Conv2d(input_dim, output_dim, kernel_size=3, padding=int(padding)))
+            layers.append(nn.BatchNorm2d(output_dim))
             layers.append(nn.ReLU(inplace=True))
 
             for _ in range(no_convs_per_block-1):
                 layers.append(nn.Conv2d(output_dim, output_dim, kernel_size=3, padding=int(padding)))
+                layers.append(nn.BatchNorm2d(output_dim))
                 layers.append(nn.ReLU(inplace=True))
 
         self.layers = nn.Sequential(*layers)
@@ -131,10 +133,12 @@ class Fcomb(nn.Module):
 
             #Decoder of N x a 1x1 convolution followed by a ReLU activation function except for the last layer
             layers.append(nn.Conv2d(self.num_filters[0]+self.latent_dim, self.num_filters[0], kernel_size=1))
+            layers.append(nn.BatchNorm2d(self.num_filters[0]))
             layers.append(nn.ReLU(inplace=True))
 
             for _ in range(no_convs_fcomb-2):
                 layers.append(nn.Conv2d(self.num_filters[0], self.num_filters[0], kernel_size=1))
+                layers.append(nn.BatchNorm2d(self.num_filters[0]))
                 layers.append(nn.ReLU(inplace=True))
 
             self.layers = nn.Sequential(*layers)
