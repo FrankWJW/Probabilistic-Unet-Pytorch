@@ -26,7 +26,7 @@ model_eval = 'CKPT_epoch168_unet_loss_12.697673916816711.pth'
 resume_model = 'checkpoint_epoch0_totalLoss_178.5162927210331.pth.tar'
 
 # hyper para
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 batch_size = 32
 lr = 1e-4
 weight_decay = 1e-5
