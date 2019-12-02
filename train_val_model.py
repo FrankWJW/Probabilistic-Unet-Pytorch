@@ -31,7 +31,7 @@ partial_data = False
 resume = False
 latent_dim = 6
 beta = 10.0
-save_ckpt = False
+save_ckpt = True
 
 eval_model = os.path.join(dir_checkpoint, model_eval)
 r_model = os.path.join(dir_checkpoint, resume_model)
@@ -57,6 +57,7 @@ def train(data):
                 mask = mask.to(device)
                 net.forward(patch, mask, training=True)
                 elbo = net.elbo(mask)
+                # TODO: reg_loss not change
                 reg_loss = l2_regularisation(net.posterior) + l2_regularisation(net.prior) + l2_regularisation(net.fcomb.layers)
                 loss = -elbo + 1e-5 * reg_loss
 
@@ -71,13 +72,14 @@ def train(data):
 
                 pbar.update(batch_size)
 
-        if save_ckpt and epoch%20 == 0:
+        if save_ckpt and epoch%10 == 0:
+            print('saving ckpt...')
             save_checkpoint({
                 'epoch': epoch + 1,
                 'state_dict': net.state_dict(),
                 'optimizer': optimizer.state_dict(),
                 'scheduler': scheduler.state_dict(),
-            }, dir_checkpoint, 'checkpoint_epoch{}_totalLoss{}_totalRecon{}.pth.tar'.format(epoch, total_loss, total_reg_loss))
+            }, dir_checkpoint, 'checkpoint_probUnet_epoch{}_totalLoss{}_totalRecon{}.pth.tar'.format(epoch, total_loss, total_reg_loss))
 
 
 def save_checkpoint(state, save_path, filename):
