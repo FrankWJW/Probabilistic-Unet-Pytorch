@@ -30,6 +30,7 @@ weight_decay = 1e-5
 epochs = 300
 partial_data = False
 resume = False
+save_ckpt = True
 
 
 eval_model = os.path.join(dir_checkpoint, model_eval)
@@ -86,12 +87,13 @@ def train(data):
 
                 pbar.update(batch_size)
 
-        save_checkpoint({
-            'epoch': epoch + 1,
-            'state_dict': net.state_dict(),
-            'optimizer': optimizer.state_dict(),
-            'scheduler': scheduler.state_dict(),
-        }, dir_checkpoint, 'checkpoint_epoch{}_totalLoss_{}.pth.tar'.format(epoch,total_loss))
+        if save_ckpt and epoch%10==0:
+            save_checkpoint({
+                'epoch': epoch + 1,
+                'state_dict': net.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'scheduler': scheduler.state_dict(),
+            }, dir_checkpoint, 'checkpoint_epoch{}_totalLoss_{}.pth.tar'.format(epoch,total_loss))
 
 
 def eval(data):
