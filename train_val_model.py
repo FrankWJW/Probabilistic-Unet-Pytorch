@@ -12,8 +12,8 @@ import utils.joint_transforms as joint_transforms
 
 
 # dirs
-data_dir = 'home/jw7u18/LIDC/data'
-dir_checkpoint = 'home/jw7u18/probabilistic_unet_output/training_ckpt'
+data_dir = 'home\\jw7u18\\LIDC\\data'
+dir_checkpoint = 'home\\jw7u18\\probabilistic_unet_output\\training_ckpt'
 
 
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation'
