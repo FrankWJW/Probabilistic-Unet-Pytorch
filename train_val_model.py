@@ -12,14 +12,16 @@ import utils.joint_transforms as joint_transforms
 
 
 # dirs
-data_dir = 'D:\LIDC\data'
-dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+data_dir = 'home/jw7u18/LIDC/data'
+dir_checkpoint = 'home/jw7u18/probabilistic_unet_output/training_ckpt'
+
+
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation'
 data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
 # model for resume training and eval
-model_eval = 'CKPT_epoch168_unet_loss_12.697673916816711.pth'
-resume_model = 'checkpoint_epoch0_totalLoss_178.5162927210331.pth.tar'
+model_eval = ''
+resume_model = ''
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
