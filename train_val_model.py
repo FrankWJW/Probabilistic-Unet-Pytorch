@@ -19,17 +19,17 @@ import utils.joint_transforms as joint_transforms
 # dirs
 data_dir = 'D:\LIDC\data'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
-recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction'
+recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction1'
 data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
 # model for resume training and eval
-model_eval = 'checkpoint_probUnet_epoch20_totalLoss2287964.9384765625_totalRecon142144.17095947266.pth.tar'
+model_eval = 'checkpoint_probUnet_epoch40_totalLoss1924880.6430664062_totalRecon142352.51593017578.pth.tar'
 resume_model = ''
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 batch_size = 32
-lr = 1e-2
+lr = 1e-4
 weight_decay = 1e-5
 epochs = 300
 partial_data = False
@@ -128,8 +128,8 @@ def save_checkpoint(state, save_path, filename):
 
 
 if __name__ == '__main__':
-    dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=None, input_transform=None
+    dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm, input_transform=input_transfm
                         , target_transform=target_transfm)
     dataloader = Dataloader(dataset, batch_size, small=partial_data)
-    # train(dataloader)
-    visualise_recon(dataloader)
+    train(dataloader)
+    # visualise_recon(dataloader)
