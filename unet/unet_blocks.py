@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from utils.utils import init_weights,init_weights_orthogonal_normal
 
 
 class SequentialConv(nn.Module):
@@ -17,6 +18,8 @@ class SequentialConv(nn.Module):
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
         )
+
+        self.layers.apply(init_weights)
 
     def forward(self, patch):
         return self.layers(patch)
