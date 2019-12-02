@@ -6,7 +6,7 @@ from torch.distributions import Normal, Independent, kl
 from unet.unet import UNet
 import numpy as np
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 
 class Encoder(nn.Module):
     """
