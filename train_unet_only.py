@@ -88,6 +88,7 @@ def train(data):
                 pbar.update(batch_size)
 
         if save_ckpt and epoch%10==0:
+            print('Saving ckpt...')
             save_checkpoint({
                 'epoch': epoch + 1,
                 'state_dict': net.state_dict(),
