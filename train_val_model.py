@@ -28,7 +28,7 @@ resume_model = 'checkpoint_epoch0_totalLoss_178.5162927210331.pth.tar'
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 batch_size = 64
-lr = 1e-1
+lr = 1e-2
 weight_decay = 1e-5
 epochs = 300
 partial_data = False
