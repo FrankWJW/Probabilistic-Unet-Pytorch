@@ -66,7 +66,7 @@ def train(data):
 
     for epoch in range(epochs - epochs_trained):
         total_loss, total_reg_loss = 0, 0
-        with tqdm(total=len(data.train_indices), desc=f'Epoch {epoch + 1}/{epochs}', unit='patch') as pbar:
+        with tqdm(total=len(data.train_indices), desc=f'Epoch {epoch + 1}/{epochs - epochs_trained}', unit='patch') as pbar:
             for step, (patch, mask, _) in enumerate(data.train_loader):
                 patch = patch.to(device)
                 mask = mask.to(device)
