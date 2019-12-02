@@ -5,6 +5,7 @@ from utils.utils import l2_regularisation
 from tqdm import tqdm
 import os
 import imageio
+import numpy as np
 from dataset.dataloader import Dataloader
 
 from torchvision import transforms
@@ -18,12 +19,12 @@ import utils.joint_transforms as joint_transforms
 # dirs
 data_dir = 'D:\LIDC\data'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
-recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation'
+recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction'
 data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
 # model for resume training and eval
-model_eval = 'CKPT_epoch168_unet_loss_12.697673916816711.pth'
-resume_model = 'checkpoint_epoch0_totalLoss_178.5162927210331.pth.tar'
+model_eval = 'checkpoint_probUnet_epoch20_totalLoss2287964.9384765625_totalRecon142144.17095947266.pth.tar'
+resume_model = ''
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -95,6 +96,26 @@ def train(data):
                 'scheduler': scheduler.state_dict(),
             }, dir_checkpoint, 'checkpoint_probUnet_epoch{}_totalLoss{}_totalRecon{}.pth.tar'.format(epoch, total_loss, total_reg_loss))
 
+def visualise_recon(data):
+    print('loading model to eval...')
+    net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
+                            no_convs_fcomb=4, beta=beta).to(device)
+    resume_dict = torch.load(eval_model)
+    net.load_state_dict(resume_dict['state_dict'])
+    net.eval()
+    with torch.no_grad():
+        with tqdm(total=len(data.test_indices), unit='patch') as pbar:
+            for step, (patch, mask, _) in enumerate(data.test_loader):
+                patch = patch.to(device)
+                mask = mask.to(device)
+                net.forward(patch, mask, training=False)
+                reconstruction = net.visual_recon()
+                for i in range(batch_size):
+                    imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_image.png'), patch[i].cpu().numpy().T)
+                    imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_mask.png'), mask[i].cpu().numpy().T)
+                    imageio.imwrite(os.path.join(recon_dir, str(step)+f'{i}_recon.png'), reconstruction[i].cpu().numpy().T)
+            pbar.update(batch_size)
+
 
 def save_checkpoint(state, save_path, filename):
     filename = os.path.join(save_path, filename)
@@ -105,4 +126,5 @@ if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm, input_transform=input_transfm
                         , target_transform=target_transfm)
     dataloader = Dataloader(dataset, batch_size, small=partial_data)
-    train(dataloader)
+    # train(dataloader)
+    visualise_recon(dataloader)

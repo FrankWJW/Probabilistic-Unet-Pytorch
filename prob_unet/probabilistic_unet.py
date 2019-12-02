@@ -282,3 +282,8 @@ class ProbabilisticUnet(nn.Module):
         self.mean_reconstruction_loss = torch.mean(reconstruction_loss)
 
         return -(self.reconstruction_loss + self.beta * self.kl)
+
+    def visual_recon(self):
+        z_posterior = self.prior_latent_space.rsample()
+        reconstruction = self.reconstruct(z_posterior=z_posterior)
+        return reconstruction
