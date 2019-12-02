@@ -24,8 +24,8 @@ model_eval = ''
 resume_model = ''
 
 # hyper para
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 32
+device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+batch_size = 64
 lr = 1e-4
 weight_decay = 1e-5
 epochs = 300
