@@ -13,27 +13,27 @@ import utils.joint_transforms as joint_transforms
 
 # if running on server, change dir to following:
 
-# data_dir = '/home/jw7u18/LIDC/data'
-# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
+data_dir = '/home/jw7u18/LIDC/data'
+dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
 # dirs
-data_dir = 'D:\LIDC\data'
-dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
-recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction1'
-data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
+# data_dir = 'D:\LIDC\data'
+# dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+# recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction1'
+# data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
 # model for resume training and eval
 model_eval = 'checkpoint_probUnet_epoch40_totalLoss1924880.6430664062_totalRecon142352.51593017578.pth.tar'
-resume_model = ''
+resume_model = 'checkpoint_probUnet_epoch50_totalLoss1822365.8896484375_totalRecon142406.52960205078.pth.tar'
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 32
-lr = 1e-4
+batch_size = 64
+lr = 1e-2
 weight_decay = 1e-5
 epochs = 300
 partial_data = False
-resume = False
+resume = True
 latent_dim = 6
 beta = 10.0
 save_ckpt = True
@@ -72,7 +72,7 @@ def train(data):
                 mask = mask.to(device)
                 net.forward(patch, mask, training=True)
                 elbo = net.elbo(mask)
-                # TODO: reg_loss not change
+                # TODO: reg_loss not change and elbo loss too large?
                 reg_loss = l2_regularisation(net.posterior) + l2_regularisation(net.prior) + l2_regularisation(net.fcomb.layers)
                 loss = -elbo + 1e-5 * reg_loss
 
