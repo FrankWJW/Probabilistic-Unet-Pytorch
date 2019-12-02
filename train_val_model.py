@@ -87,7 +87,7 @@ def train(data):
 
                 pbar.update(batch_size)
 
-        if save_ckpt and epoch%10 == 0:
+        if save_ckpt and epoch%20 == 0:
             print('saving ckpt...')
             save_checkpoint({
                 'epoch': epoch + 1,
