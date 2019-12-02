@@ -96,7 +96,8 @@ def train(data):
                 'scheduler': scheduler.state_dict(),
             }, dir_checkpoint, 'checkpoint_probUnet_epoch{}_totalLoss{}_totalRecon{}.pth.tar'.format(epoch, total_loss, total_reg_loss))
 
-def visualise_recon(data):
+
+def visualise_recon(data, num_sample=10):
     print('loading model to eval...')
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
                             no_convs_fcomb=4, beta=beta).to(device)
@@ -104,16 +105,20 @@ def visualise_recon(data):
     net.load_state_dict(resume_dict['state_dict'])
     net.eval()
     with torch.no_grad():
+        reconstruction = []
         with tqdm(total=len(data.test_indices), unit='patch') as pbar:
             for step, (patch, mask, _) in enumerate(data.test_loader):
                 patch = patch.to(device)
                 mask = mask.to(device)
                 net.forward(patch, mask, training=False)
-                reconstruction = net.visual_recon()
+                for sample in range(num_sample):
+                    reconstruction.append(net.visual_recon())
                 for i in range(batch_size):
                     imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_image.png'), patch[i].cpu().numpy().T)
                     imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_mask.png'), mask[i].cpu().numpy().T)
-                    imageio.imwrite(os.path.join(recon_dir, str(step)+f'{i}_recon.png'), reconstruction[i].cpu().numpy().T)
+                    for s in range(len(reconstruction)):
+                        imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_recon_{s}th_s.png'), reconstruction[s][i].cpu().numpy().T)
+                break
             pbar.update(batch_size)
 
 
@@ -123,7 +128,7 @@ def save_checkpoint(state, save_path, filename):
 
 
 if __name__ == '__main__':
-    dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm, input_transform=input_transfm
+    dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=None, input_transform=None
                         , target_transform=target_transfm)
     dataloader = Dataloader(dataset, batch_size, small=partial_data)
     # train(dataloader)
