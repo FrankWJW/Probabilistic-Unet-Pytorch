@@ -10,13 +10,16 @@ from dataset.dataloader import Dataloader
 from torchvision import transforms
 import utils.joint_transforms as joint_transforms
 
+# if running on server, change dir to following:
 
+data_dir = '/home/jw7u18/LIDC/data'
+dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
 # dirs
-data_dir = 'D:\LIDC\data'
-dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
-recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation'
-data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
+# data_dir = 'D:\LIDC\data'
+# dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+# recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation'
+# data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
 # model for resume training and eval
 model_eval = 'CKPT_epoch168_unet_loss_12.697673916816711.pth'
