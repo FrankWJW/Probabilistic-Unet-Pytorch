@@ -53,7 +53,17 @@ def train(data):
     milestones = list(range(0, epochs, int(epochs / 4)))
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.4)
 
-    for epoch in range(epochs):
+    if resume:
+        print('loading checkpoint model to resume...')
+        resume_dict = torch.load(r_model)
+        net.load_state_dict(resume_dict['state_dict'])
+        optimizer.load_state_dict(resume_dict['optimizer'])
+        scheduler.load_state_dict(resume_dict['scheduler'])
+        epochs_trained = resume_dict['epoch']
+    else:
+        epochs_trained = 0
+
+    for epoch in range(epochs - epochs_trained):
         total_loss, total_reg_loss = 0, 0
         with tqdm(total=len(data.train_indices), desc=f'Epoch {epoch + 1}/{epochs}', unit='patch') as pbar:
             for step, (patch, mask, _) in enumerate(data.train_loader):
