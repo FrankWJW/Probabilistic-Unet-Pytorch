@@ -30,34 +30,32 @@ resume_model = ''
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 batch_size = 32
-lr = 1e-2
+lr = 1e-4
 weight_decay = 1e-5
-epochs = 300
+epochs = 600
 partial_data = False
 resume = False
-latent_dim = 15
+latent_dim = 6
 beta = 10.0
 save_ckpt = False
 random = False
-initialiser = {'w':'kaiming_normal', 'b':'normal'}
+# kaiming_normal and orthogonal
+initializers = {'w':'kaiming_normal', 'b':'normal'}
 
 eval_model = os.path.join(dir_checkpoint, model_eval)
 r_model = os.path.join(dir_checkpoint, resume_model)
 
 # Transforms
-# joint_transfm = joint_transforms.Compose([joint_transforms.RandomHorizontallyFlip(),
-#                                           joint_transforms.RandomSizedCrop(128),
-#                                           joint_transforms.RandomRotate(60)])
-# input_transfm = transforms.Compose([transforms.ToPILImage()])
+joint_transfm = joint_transforms.Compose([joint_transforms.RandomHorizontallyFlip(),
+                                          joint_transforms.RandomSizedCrop(128),
+                                          joint_transforms.RandomRotate(60)])
+input_transfm = transforms.Compose([transforms.ToPILImage()])
 target_transfm = transforms.Compose([transforms.ToTensor()])
-
-joint_transfm = None
-input_transfm = None
 
 
 def train(data):
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32,64,128,192],
-                            latent_dim=latent_dim, no_convs_fcomb=4, beta=beta, initializers=initialiser).to(device)
+                            latent_dim=latent_dim, no_convs_fcomb=4, beta=beta, initializers=initializers).to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
     milestones = list(range(0, epochs, int(epochs / 4)))
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.4)
@@ -105,29 +103,7 @@ def train(data):
             }, dir_checkpoint, f'checkpoint_probUnet_epoch{epoch}_latenDim{latent_dim}_totalLoss{total_loss}_total_reg_loss{total_reg_loss}.pth.tar')
 
 
-def visualise_recon(data, num_sample=10):
-    print(f'loading model to eval...{model_eval}')
-    net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
-                            no_convs_fcomb=4, beta=beta).to(device)
-    resume_dict = torch.load(eval_model)
-    net.load_state_dict(resume_dict['state_dict'])
-    net.eval()
-    with torch.no_grad():
-        with tqdm(total=len(data.test_indices), unit='patch') as pbar:
-            for step, (patch, mask, _) in enumerate(data.test_loader):
-                reconstruction = []
-                patch = patch.to(device)
-                mask = mask.to(device)
-                net.forward(patch, mask, training=False)
-                for sample in range(num_sample):
-                    reconstruction.append(net.visual_recon())
-                for i in range(batch_size):
-                    imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_image.png'), patch[i].cpu().numpy().T)
-                    imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_mask.png'), mask[i].cpu().numpy().T)
-                    for s in range(len(reconstruction)):
-                        imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_recon_{s}th_s.png'), -reconstruction[s][i].cpu().numpy().T.astype(np.uint8))
-                break
-            pbar.update(batch_size)
+
 
 
 def save_checkpoint(state, save_path, filename):

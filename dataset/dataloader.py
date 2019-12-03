@@ -5,7 +5,7 @@ from torch.utils.data.sampler import SubsetRandomSampler, SequentialSampler
 import math
 
 class Dataloader():
-    def __init__(self, dataset, batch_size, small=True, random=False):
+    def __init__(self, dataset, batch_size, small=False, random=False):
         self.batch_size = batch_size
         self.dataset = dataset
         # take small amount of data for fast training
