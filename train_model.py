@@ -13,12 +13,12 @@ import utils.joint_transforms as joint_transforms
 
 # if running on server, change dir to following:
 
-# data_dir = '/home/jw7u18/LIDC/data'
-# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
+data_dir = '/home/jw7u18/LIDC/data'
+dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
 # dirs
-data_dir = 'D:\LIDC\data'
-dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+# data_dir = 'D:\LIDC\data'
+# dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction3'
 data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
@@ -47,11 +47,13 @@ eval_model = os.path.join(dir_checkpoint, model_eval)
 r_model = os.path.join(dir_checkpoint, resume_model)
 
 # Transforms
-joint_transfm = joint_transforms.Compose([joint_transforms.RandomHorizontallyFlip(),
-                                          joint_transforms.RandomSizedCrop(128),
-                                          joint_transforms.RandomRotate(60)])
-input_transfm = transforms.Compose([transforms.ToPILImage()])
+# joint_transfm = joint_transforms.Compose([joint_transforms.RandomHorizontallyFlip(),
+#                                           joint_transforms.RandomSizedCrop(128),
+#                                           joint_transforms.RandomRotate(60)])
+# input_transfm = transforms.Compose([transforms.ToPILImage()])
 target_transfm = transforms.Compose([transforms.ToTensor()])
+joint_transfm=None
+input_transfm=None
 
 
 def train(data):
