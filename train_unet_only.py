@@ -6,27 +6,28 @@ import os
 import imageio
 import torch.nn as nn
 from dataset.dataloader import Dataloader
+import numpy as np
 
 from torchvision import transforms
 import utils.joint_transforms as joint_transforms
 
 # if running on server, change dir to following:
 
-data_dir = '/home/jw7u18/LIDC/data'
-dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
+# data_dir = '/home/jw7u18/LIDC/data'
+# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
 # dirs
-# data_dir = 'D:\LIDC\data'
-# dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
-# recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation'
-# data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
+data_dir = 'D:\LIDC\data'
+dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation1'
+data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
 # model for resume training and eval
-model_eval = 'CKPT_epoch168_unet_loss_12.697673916816711.pth'
+model_eval = 'checkpoint_epoch280_totalLoss_6.8233585972338915.pth.tar'
 resume_model = 'checkpoint_epoch0_totalLoss_178.5162927210331.pth.tar'
 
 # hyper para
-device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 batch_size = 32
 lr = 1e-4
 weight_decay = 1e-5
@@ -102,7 +103,7 @@ def train(data):
 
 def eval(data):
     net = UNet(in_channels=1, n_classes=1, bilinear=True).to(device)
-    load_dict = torch.load(eval_model)
+    load_dict = torch.load(eval_model, map_location='cuda:0')
     net.load_state_dict(load_dict['state_dict'])
     # net.load_state_dict(load_dict)
     net.eval()
@@ -111,12 +112,11 @@ def eval(data):
             for step, (patch, mask, _) in enumerate(data.test_loader):
                 patch = patch.to(device)
                 mask = mask.to(device)
-                mask = torch.unsqueeze(mask, 1)
                 recon = net(patch)
 
                 imageio.imwrite(os.path.join(recon_dir, str(step) + '_image.png'), patch[0].cpu().numpy().T)
                 imageio.imwrite(os.path.join(recon_dir, str(step) + '_mask.png'), mask[0].cpu().numpy().T)
-                imageio.imwrite(os.path.join(recon_dir, str(step)+'_recon.png'), recon[0].cpu().numpy().T)
+                imageio.imwrite(os.path.join(recon_dir, str(step)+'_recon.png'), -recon[0].cpu().numpy().T.astype(np.uint8))
 
                 pbar.update(data.batch_size)
 
@@ -134,9 +134,9 @@ def save_transformed_data():
 
 
 if __name__ == '__main__':
-    dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm, input_transform=input_transfm
+    dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=None, input_transform=None
                         , target_transform=target_transfm)
     # dataset.save_data_set(data_save_dir)
-    dataloader = Dataloader(dataset, batch_size, small=partial_data)
-    train(dataloader)
-    # eval(dataloader)
+    dataloader = Dataloader(dataset, batch_size=1, small=partial_data)
+    # train(dataloader)
+    eval(dataloader)
