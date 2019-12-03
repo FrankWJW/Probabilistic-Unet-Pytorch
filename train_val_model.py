@@ -105,9 +105,9 @@ def visualise_recon(data, num_sample=10):
     net.load_state_dict(resume_dict['state_dict'])
     net.eval()
     with torch.no_grad():
-        reconstruction = []
         with tqdm(total=len(data.test_indices), unit='patch') as pbar:
             for step, (patch, mask, _) in enumerate(data.test_loader):
+                reconstruction = []
                 patch = patch.to(device)
                 mask = mask.to(device)
                 net.forward(patch, mask, training=False)
