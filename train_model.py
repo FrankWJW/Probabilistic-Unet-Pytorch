@@ -100,7 +100,7 @@ def train(data):
                 'state_dict': net.state_dict(),
                 'optimizer': optimizer.state_dict(),
                 'scheduler': scheduler.state_dict(),
-            }, dir_checkpoint, 'checkpoint_probUnet_epoch{}_totalLoss{}_totalRecon{}.pth.tar'.format(epoch, total_loss, total_reg_loss))
+            }, dir_checkpoint, f'checkpoint_probUnet_epoch{epoch}_latenDim{latent_dim}_totalLoss{total_loss}_total_reg_loss{total_reg_loss}.pth.tar')
 
 
 def visualise_recon(data, num_sample=10):
