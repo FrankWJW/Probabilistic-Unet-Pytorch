@@ -13,12 +13,13 @@ import utils.joint_transforms as joint_transforms
 
 # if running on server, change dir to following:
 
-# data_dir = '/home/jw7u18/LIDC/data'
-# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
+data_dir = '/home/jw7u18/LIDC/data'
+dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
 # dirs
-data_dir = 'D:\LIDC\data'
-dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+# data_dir = 'D:\LIDC\data'
+# dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction3'
 data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
@@ -33,19 +34,24 @@ lr = 1e-2
 weight_decay = 1e-5
 epochs = 300
 partial_data = False
-resume = True
-latent_dim = 6
+resume = False
+latent_dim = 15
 beta = 10.0
 save_ckpt = True
+random = False
 
 eval_model = os.path.join(dir_checkpoint, model_eval)
 r_model = os.path.join(dir_checkpoint, resume_model)
 
-joint_transfm = joint_transforms.Compose([joint_transforms.RandomHorizontallyFlip(),
-                                          joint_transforms.RandomSizedCrop(128),
-                                          joint_transforms.RandomRotate(60)])
-input_transfm = transforms.Compose([transforms.ToPILImage()])
+# Transforms
+# joint_transfm = joint_transforms.Compose([joint_transforms.RandomHorizontallyFlip(),
+#                                           joint_transforms.RandomSizedCrop(128),
+#                                           joint_transforms.RandomRotate(60)])
+# input_transfm = transforms.Compose([transforms.ToPILImage()])
 target_transfm = transforms.Compose([transforms.ToTensor()])
+
+joint_transfm = None
+input_transfm = None
 
 
 def train(data):
@@ -128,8 +134,8 @@ def save_checkpoint(state, save_path, filename):
 
 
 if __name__ == '__main__':
-    dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=None, input_transform=None
+    dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm, input_transform=input_transfm
                         , target_transform=target_transfm)
-    dataloader = Dataloader(dataset, batch_size, small=partial_data, random=False)
-    # train(dataloader)
-    visualise_recon(dataloader, num_sample=100)
+    dataloader = Dataloader(dataset, batch_size, small=partial_data, random=random)
+    train(dataloader)
+    # visualise_recon(dataloader, num_sample=100)
