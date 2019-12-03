@@ -21,7 +21,7 @@ class ProbabilisticUnet(nn.Module):
     no_cons_per_block: no convs per block in the (convolutional) encoder of prior and posterior
     """
 
-    def __init__(self, input_channels=1, num_classes=1, num_filters=[32,64,128,192], latent_dim=6, no_convs_fcomb=4, beta=10.0, initializers=None):
+    def __init__(self, input_channels=1, num_classes=1, num_filters=[32,64,128,192], latent_dim=6, no_convs_fcomb=4, beta=10.0, initializers=None, isotropic=False):
         super(ProbabilisticUnet, self).__init__()
         self.input_channels = input_channels
         self.num_classes = num_classes
@@ -32,10 +32,11 @@ class ProbabilisticUnet(nn.Module):
         self.initializers = initializers
         self.beta = beta
         self.z_prior_sample = 0
+        self.isotropic = isotropic
 
         self.unet = UNet(self.input_channels, self.num_classes, self.num_filters, if_last_layer=False).to(device)
-        self.prior = AxisAlignedConvGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim,  self.initializers,).to(device)
-        self.posterior = AxisAlignedConvGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, posterior=True).to(device)
+        self.prior = AxisAlignedConvGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim,  self.initializers, isotropic=isotropic).to(device)
+        self.posterior = AxisAlignedConvGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, isotropic=isotropic, posterior=True).to(device)
         self.fcomb = Fcomb(self.num_filters, self.latent_dim, self.input_channels,
                            self.num_classes, self.no_convs_fcomb, self.initializers, use_tile=True, device=device).to(device)
 

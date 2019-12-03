@@ -37,7 +37,8 @@ partial_data = False
 resume = False
 latent_dim = 6
 beta = 10.0
-save_ckpt = False
+isotropic = True
+save_ckpt = True
 random = False
 # kaiming_normal and orthogonal
 initializers = {'w':'kaiming_normal', 'b':'normal'}
@@ -54,8 +55,11 @@ target_transfm = transforms.Compose([transforms.ToTensor()])
 
 
 def train(data):
+    print(f"isotropic gaussian: {isotropic}\ninitialisation: {initializers['w']}"
+          f"\nsavingCKPT: {save_ckpt}\nlr_initial: {lr}\nbatchSize: {batch_size}")
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32,64,128,192],
-                            latent_dim=latent_dim, no_convs_fcomb=4, beta=beta, initializers=initializers).to(device)
+                            latent_dim=latent_dim, no_convs_fcomb=4, beta=beta, initializers=initializers,
+                            isotropic=isotropic).to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
     milestones = list(range(0, epochs, int(epochs / 4)))
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.4)
@@ -93,14 +97,15 @@ def train(data):
 
                 pbar.update(batch_size)
 
-        if save_ckpt and epoch%20 == 0:
+        if save_ckpt and epoch%30 == 0:
             print('saving ckpt...')
             save_checkpoint({
                 'epoch': epoch + 1,
                 'state_dict': net.state_dict(),
                 'optimizer': optimizer.state_dict(),
                 'scheduler': scheduler.state_dict(),
-            }, dir_checkpoint, f'checkpoint_probUnet_epoch{epoch}_latenDim{latent_dim}_totalLoss{total_loss}_total_reg_loss{total_reg_loss}.pth.tar')
+            }, dir_checkpoint, f'checkpoint_probUnet_epoch{epoch}_latenDim{latent_dim}_totalLoss{total_loss}'
+                               f'_total_reg_loss{total_reg_loss}_isotropic_{isotropic}.pth.tar')
 
 
 

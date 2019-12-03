@@ -4,12 +4,14 @@ import torch.nn.functional as F
 from torch.distributions import Normal, Independent, kl
 from prob_unet.Encoders import Encoder
 from utils.utils import init_weights,init_weights_orthogonal_normal
+import numpy as np
+
 
 class AxisAlignedConvGaussian(nn.Module):
     """
     A convolutional net that parametrizes a Gaussian distribution with axis aligned covariance matrix.
     """
-    def __init__(self, input_channels, num_filters, no_convs_per_block, latent_dim, initializers, posterior=False):
+    def __init__(self, input_channels, num_filters, no_convs_per_block, latent_dim, initializers, posterior=False, isotropic=False):
         super(AxisAlignedConvGaussian, self).__init__()
         self.input_channels = input_channels
         self.channel_axis = 1
@@ -28,6 +30,7 @@ class AxisAlignedConvGaussian(nn.Module):
         self.show_concat = 0
         self.show_enc = 0
         self.sum_input = 0
+        self.isotropic = isotropic
 
         if initializers['w'] == 'orthogonal':
             self.conv_layer.apply(init_weights_orthogonal_normal)
@@ -59,7 +62,11 @@ class AxisAlignedConvGaussian(nn.Module):
         mu_log_sigma = torch.squeeze(mu_log_sigma, dim=2)
 
         mu = mu_log_sigma[:,:self.latent_dim]
-        log_sigma = mu_log_sigma[:,self.latent_dim:]
+        if not self.isotropic:
+            log_sigma = mu_log_sigma[:, self.latent_dim:]
+        else:
+            log_sigma = mu_log_sigma[:,self.latent_dim:]
+            log_sigma = torch.mean(log_sigma, dim=1).view(-1, 1).repeat(1, 6)
 
         #This is a multivariate normal with diagonal covariance matrix sigma
         #https://github.com/pytorch/pytorch/pull/11178
