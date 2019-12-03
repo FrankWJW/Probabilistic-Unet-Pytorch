@@ -19,11 +19,11 @@ import utils.joint_transforms as joint_transforms
 # dirs
 data_dir = 'D:\LIDC\data'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
-recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction1'
+recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction2'
 data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
 # model for resume training and eval
-model_eval = 'checkpoint_probUnet_epoch40_totalLoss1924880.6430664062_totalRecon142352.51593017578.pth.tar'
+model_eval = 'checkpoint_probUnet_epoch160_totalLoss1072597.1241455078_totalRecon168910.6801147461.pth.tar'
 resume_model = 'checkpoint_probUnet_epoch50_totalLoss1822365.8896484375_totalRecon142406.52960205078.pth.tar'
 
 # hyper para
@@ -98,7 +98,7 @@ def train(data):
 
 
 def visualise_recon(data, num_sample=10):
-    print('loading model to eval...')
+    print(f'loading model to eval...{model_eval}')
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
                             no_convs_fcomb=4, beta=beta).to(device)
     resume_dict = torch.load(eval_model)
@@ -117,7 +117,7 @@ def visualise_recon(data, num_sample=10):
                     imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_image.png'), patch[i].cpu().numpy().T)
                     imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_mask.png'), mask[i].cpu().numpy().T)
                     for s in range(len(reconstruction)):
-                        imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_recon_{s}th_s.png'), reconstruction[s][i].cpu().numpy().T)
+                        imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_recon_{s}th_s.png'), -reconstruction[s][i].cpu().numpy().T.astype(np.uint8))
                 break
             pbar.update(batch_size)
 
@@ -128,8 +128,8 @@ def save_checkpoint(state, save_path, filename):
 
 
 if __name__ == '__main__':
-    dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm, input_transform=input_transfm
+    dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=None, input_transform=None
                         , target_transform=target_transfm)
     dataloader = Dataloader(dataset, batch_size, small=partial_data)
-    train(dataloader)
-    # visualise_recon(dataloader)
+    # train(dataloader)
+    visualise_recon(dataloader)
