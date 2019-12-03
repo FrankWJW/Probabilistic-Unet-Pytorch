@@ -39,6 +39,7 @@ latent_dim = 15
 beta = 10.0
 save_ckpt = False
 random = False
+initialiser = {'w':'kaiming_normal', 'b':'normal'}
 
 eval_model = os.path.join(dir_checkpoint, model_eval)
 r_model = os.path.join(dir_checkpoint, resume_model)
@@ -55,7 +56,8 @@ input_transfm = None
 
 
 def train(data):
-    net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32,64,128,192], latent_dim=latent_dim, no_convs_fcomb=4, beta=beta).to(device)
+    net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32,64,128,192],
+                            latent_dim=latent_dim, no_convs_fcomb=4, beta=beta, initializers=initialiser).to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
     milestones = list(range(0, epochs, int(epochs / 4)))
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.4)
