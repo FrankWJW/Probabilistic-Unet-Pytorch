@@ -13,14 +13,14 @@ import utils.joint_transforms as joint_transforms
 
 # if running on server, change dir to following:
 
-data_dir = '/home/jw7u18/LIDC/data'
-dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
+# data_dir = '/home/jw7u18/LIDC/data'
+# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
 # dirs
-# data_dir = 'D:\LIDC\data'
-# dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
-# recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction1'
-# data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
+data_dir = 'D:\LIDC\data'
+dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction1'
+data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
 # model for resume training and eval
 model_eval = 'checkpoint_probUnet_epoch40_totalLoss1924880.6430664062_totalRecon142352.51593017578.pth.tar'
