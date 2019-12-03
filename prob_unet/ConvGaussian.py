@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Normal, Independent, kl
 from prob_unet.Encoders import Encoder
+from utils.utils import init_weights,init_weights_orthogonal_normal
 
 class AxisAlignedConvGaussian(nn.Module):
     """
@@ -28,8 +29,10 @@ class AxisAlignedConvGaussian(nn.Module):
         self.show_enc = 0
         self.sum_input = 0
 
-        nn.init.kaiming_normal_(self.conv_layer.weight, mode='fan_in', nonlinearity='relu')
-        nn.init.normal_(self.conv_layer.bias)
+        if initializers['w'] == 'orthogonal':
+            self.conv_layer.apply(init_weights_orthogonal_normal)
+        else:
+            self.conv_layer.apply(init_weights)
 
     def forward(self, input, segm=None):
 

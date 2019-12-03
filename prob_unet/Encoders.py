@@ -42,7 +42,10 @@ class Encoder(nn.Module):
 
         self.layers = nn.Sequential(*layers)
 
-        self.layers.apply(init_weights)
+        if initializers['w'] == 'orthogonal':
+            self.layers.apply(init_weights_orthogonal_normal)
+        else:
+            self.layers.apply(init_weights)
 
     def forward(self, input):
         output = self.layers(input)

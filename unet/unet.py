@@ -6,13 +6,14 @@ from .unet_blocks import *
 
 
 class UNet(nn.Module):
-    def __init__(self, in_channels, n_classes, num_filters=[32,64,128,192], if_last_layer=True, bilinear=True):
+    def __init__(self, in_channels, n_classes, num_filters=[32,64,128,192], if_last_layer=True, bilinear=True, initializers = None):
         super(UNet, self).__init__()
         self.in_channels = in_channels
         self.n_classes = n_classes
         self.n_filters = num_filters
         self.bilinear = bilinear
         self.if_last_layer = if_last_layer
+        self.initializers = initializers
 
         self.inc = SequentialConv(self.in_channels, 32)
         self.down1 = DownConvBlock(32, 64)

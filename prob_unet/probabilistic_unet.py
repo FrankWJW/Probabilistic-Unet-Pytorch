@@ -29,7 +29,7 @@ class ProbabilisticUnet(nn.Module):
         self.latent_dim = latent_dim
         self.no_convs_per_block = 3
         self.no_convs_fcomb = no_convs_fcomb
-        self.initializers = {'w':'he_normal', 'b':'normal'}
+        self.initializers = {'w':'orthogonal', 'b':'normal'}
         self.beta = beta
         self.z_prior_sample = 0
 
@@ -37,7 +37,7 @@ class ProbabilisticUnet(nn.Module):
         self.prior = AxisAlignedConvGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim,  self.initializers,).to(device)
         self.posterior = AxisAlignedConvGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, posterior=True).to(device)
         self.fcomb = Fcomb(self.num_filters, self.latent_dim, self.input_channels,
-                           self.num_classes, self.no_convs_fcomb, {'w':'orthogonal', 'b':'normal'}, use_tile=True, device=device).to(device)
+                           self.num_classes, self.no_convs_fcomb, self.initializers, use_tile=True, device=device).to(device)
 
     def forward(self, patch, segm, training=True):
         """

@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from utils.utils import init_weights,init_weights_orthogonal_normal
 
+initializers = {'w':'orthogonal', 'b':'normal'}
 
 class SequentialConv(nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -18,8 +19,10 @@ class SequentialConv(nn.Module):
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
         )
-
-        self.layers.apply(init_weights)
+        if initializers['w'] == 'orthogonal':
+            self.layers.apply(init_weights_orthogonal_normal)
+        else:
+            self.layers.apply(init_weights)
 
     def forward(self, patch):
         return self.layers(patch)
