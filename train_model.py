@@ -13,23 +13,23 @@ import utils.joint_transforms as joint_transforms
 
 # if running on server, change dir to following:
 
-data_dir = '/home/jw7u18/LIDC/data'
-dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
+# data_dir = '/home/jw7u18/LIDC/data'
+# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
 # dirs
-# data_dir = 'D:\LIDC\data'
-# dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+data_dir = 'D:\LIDC\data'
+dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction3'
 data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
 # model for resume training and eval
-model_eval = 'checkpoint_probUnet_epoch240_totalLoss997976.3245849609_totalRecon187804.8690185547.pth.tar'
-resume_model = 'checkpoint_probUnet_epoch50_totalLoss1822365.8896484375_totalRecon142406.52960205078.pth.tar'
+model_eval = ''
+resume_model = ''
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 64
+batch_size = 32
 lr = 1e-2
 weight_decay = 1e-5
 epochs = 300
@@ -37,7 +37,7 @@ partial_data = False
 resume = False
 latent_dim = 15
 beta = 10.0
-save_ckpt = True
+save_ckpt = False
 random = False
 
 eval_model = os.path.join(dir_checkpoint, model_eval)
