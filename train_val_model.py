@@ -19,11 +19,11 @@ import utils.joint_transforms as joint_transforms
 # dirs
 data_dir = 'D:\LIDC\data'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
-recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction2'
+recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction3'
 data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
 # model for resume training and eval
-model_eval = 'checkpoint_probUnet_epoch160_totalLoss1072597.1241455078_totalRecon168910.6801147461.pth.tar'
+model_eval = 'checkpoint_probUnet_epoch240_totalLoss997976.3245849609_totalRecon187804.8690185547.pth.tar'
 resume_model = 'checkpoint_probUnet_epoch50_totalLoss1822365.8896484375_totalRecon142406.52960205078.pth.tar'
 
 # hyper para
@@ -130,6 +130,6 @@ def save_checkpoint(state, save_path, filename):
 if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=None, input_transform=None
                         , target_transform=target_transfm)
-    dataloader = Dataloader(dataset, batch_size, small=partial_data)
+    dataloader = Dataloader(dataset, batch_size, small=partial_data, random=False)
     # train(dataloader)
-    visualise_recon(dataloader)
+    visualise_recon(dataloader, num_sample=100)
