@@ -84,7 +84,6 @@ def train(data):
                 mask = mask.to(device)
                 net.forward(patch, mask, training=True)
                 elbo = net.elbo(mask)
-                # TODO: reg_loss not change and elbo loss too large?
                 reg_loss = l2_regularisation(net.posterior) + l2_regularisation(net.prior) + l2_regularisation(net.fcomb.layers)
                 loss = -elbo + 1e-5 * reg_loss
 

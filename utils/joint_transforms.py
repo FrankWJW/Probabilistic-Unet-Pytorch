@@ -153,7 +153,6 @@ class RandomSized(object):
 
         return self.crop(*self.scale(img, mask))
 
-# TODO: fix sliding crop (translated crop)
 class SlidingCropOld(object):
     def __init__(self, crop_size, stride_rate, ignore_label):
         self.crop_size = crop_size
@@ -243,8 +242,3 @@ class SlidingCrop(object):
             img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
             mask = Image.fromarray(mask.astype(np.uint8)).convert('P')
             return [img], [mask], [[0, sub_h, 0, sub_w, sub_h, sub_w]]
-
-# TODO: elastic deformation
-
-
-# TODO: shearing

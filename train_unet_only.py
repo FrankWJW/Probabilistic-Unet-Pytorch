@@ -46,7 +46,6 @@ joint_transfm = joint_transforms.Compose([joint_transforms.RandomHorizontallyFli
 input_transfm = transforms.Compose([transforms.ToPILImage()])
 target_transfm = transforms.Compose([transforms.ToTensor()])
 
-# TODO: transforms
 # random elastic deformation, rotation, shearing, scaling and a randomly
 # translated crop that results in a tile size of 128 × 128 pixels
 
