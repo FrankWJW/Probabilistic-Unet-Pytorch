@@ -15,16 +15,16 @@ import utils.joint_transforms as joint_transforms
 data_dir = 'D:\LIDC\data'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
-recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction4'
+recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction_isotropic'
 
 # model for resume training and eval
-model_eval = 'checkpoint_probUnet_epoch60_latenDim15_totalLoss658775.2561950684_total_reg_loss145931.7583618164.pth.tar'
+model_eval = 'checkpoint_probUnet_epoch420_latenDim6_totalLoss563047.706817627_total_reg_loss262616.68255615234_isotropic_True.pth.tar'
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 batch_size = 32
 beta = 10.0
-latent_dim = 15
+latent_dim = 6
 # kaiming_normal and orthogonal
 initializers = {'w':'kaiming_normal', 'b':'normal'}
 
@@ -40,7 +40,7 @@ def visualise_recon(data, num_sample=10):
     print(f'loading model to eval...{model_eval}')
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
                             no_convs_fcomb=4, beta=beta, initializers=initializers).to(device)
-    resume_dict = torch.load(eval_model)
+    resume_dict = torch.load(eval_model, map_location=device)
     net.load_state_dict(resume_dict['state_dict'])
     net.eval()
     with torch.no_grad():
