@@ -7,6 +7,7 @@ from tqdm import tqdm
 import os
 import imageio
 import numpy as np
+import statistics
 from dataset.dataloader import Dataloader
 
 from torchvision import transforms
@@ -19,14 +20,14 @@ dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction_bool'
 
 # model for resume training and eval
-model_eval = 'checkpoint_probUnet_epoch420_latenDim6_totalLoss563047.706817627_total_reg_loss262616.68255615234_isotropic_True.pth.tar'
+model_eval = 'checkpoint_probUnet_epoch240_latenDim6_totalLoss997976.3245849609_totalRecon187804.8690185547.pth.tar'
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 batch_size = 32
 beta = 10.0
 latent_dim = 6
-small = True
+small = False
 # kaiming_normal and orthogonal
 initializers = {'w':'kaiming_normal', 'b':'normal'}
 
@@ -56,7 +57,7 @@ def visualise_recon(data, num_sample=10):
                     imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_image.png'), patch[i].cpu().numpy().T)
                     imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_mask.png'), mask[i].cpu().numpy().T)
                     for s in range(len(reconstruction)):
-                        r = reconstruction[s][i].T >= 0
+                        r = reconstruction[s][i].T > 0
                         imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_recon_{s}th_s.png'), r.astype(float))
                 break
             pbar.update(batch_size)
@@ -64,43 +65,37 @@ def visualise_recon(data, num_sample=10):
 
 def eval(data, num_sample=10):
     print('evaluation...')
+    test_list = data.test_indices
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
                             no_convs_fcomb=4, beta=beta, initializers=initializers).to(device)
     resume_dict = torch.load(eval_model, map_location=device)
     net.load_state_dict(resume_dict['state_dict'])
     net.eval()
     with torch.no_grad():
-        reconstruction = []
-        masks = []
-        for step, (patch, mask, _) in enumerate(data.test_loader):
-            if mask.shape[0] is not batch_size:
-                # discard last part
-                break
+        energy_dist = []
+        for step, (patch, _, _) in enumerate(data.test_loader):
             patch = patch.to(device)
-            mask = mask.to(device)
-            net.forward(patch, mask, training=False)
-            temp = np.asarray(net.visual_recon(num_sample)) > 0
-            reconstruction.append(temp.astype(float))
+            net.forward(patch, _, training=False)
 
-            temp_mask = mask.cpu().numpy() > 0
-            masks.append(temp_mask.astype(float))
+            binary_recon = np.asarray(net.visual_recon(num_sample)) > 0
+            binary_recon.astype(float)
+            reconstruction = np.asarray(binary_recon).reshape(-1, 128, 128)
 
-    masks = np.asarray(masks).reshape(-1,128,128)
-    reconstruction = np.asarray(reconstruction).reshape(-1, 128, 128)
+            mask = dataset.labels[test_list[step]]
+            masks = np.asarray(mask).reshape(-1, 128, 128)
 
-    # for x in range(masks.shape[0]):
-    #     if np.sum(masks[x]) == 0.0 or np.sum(reconstruction[x]) == 0.0:
-    #         masks = np.delete(masks, x, 0)
-    #         reconstruction = np.delete(reconstruction, x, 0)
+            energy_dist.append(generalised_energy_distance(reconstruction, masks))
 
-    ged = generalised_energy_distance(reconstruction, masks)
-    print(ged)
+
+        print(np.mean(energy_dist))
+
+
 
 
 if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm,
                         input_transform=input_transfm
                         , target_transform=target_transfm)
-    dataloader = Dataloader(dataset, batch_size, small=small)
+    dataloader = Dataloader(dataset, batch_size=1, small=small)
     eval(dataloader, num_sample=10)
     # visualise_recon(dataloader)

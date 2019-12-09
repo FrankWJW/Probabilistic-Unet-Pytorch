@@ -27,3 +27,4 @@ class Dataloader():
 
     def print_info(self):
         print("Number of training/test patches:", (len(self.train_indices),len(self.test_indices)))
+
