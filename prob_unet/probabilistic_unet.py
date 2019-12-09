@@ -115,7 +115,10 @@ class ProbabilisticUnet(nn.Module):
 
         return -(self.reconstruction_loss + self.beta * self.kl)
 
-    def visual_recon(self):
-        z_posterior = self.prior_latent_space.rsample()
-        reconstruction = self.reconstruct(z_posterior=z_posterior)
-        return reconstruction
+    def visual_recon(self, num_sample=10):
+        r = []
+        for samp in range(num_sample):
+            z_posterior = self.prior_latent_space.rsample()
+            reconstruction = self.reconstruct(z_posterior=z_posterior).cpu().numpy()
+            r.append(reconstruction)
+        return r

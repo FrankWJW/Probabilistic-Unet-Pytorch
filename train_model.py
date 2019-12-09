@@ -13,12 +13,12 @@ import utils.joint_transforms as joint_transforms
 
 # if running on server, change dir to following:
 
-data_dir = '/home/jw7u18/LIDC/data'
-dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
+# data_dir = '/home/jw7u18/LIDC/data'
+# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
 # dirs
-# data_dir = 'D:\LIDC\data'
-# dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+data_dir = 'D:\LIDC\data'
+dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction3'
 data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
@@ -28,7 +28,7 @@ model_eval = ''
 resume_model = ''
 
 # hyper para
-device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 batch_size = 32
 lr = 1e-4
 weight_decay = 1e-5
@@ -37,8 +37,8 @@ partial_data = False
 resume = False
 latent_dim = 6
 beta = 10.0
-isotropic = True
-save_ckpt = True
+isotropic = False
+save_ckpt = False
 random = False
 # kaiming_normal and orthogonal
 initializers = {'w':'kaiming_normal', 'b':'normal'}
@@ -122,4 +122,3 @@ if __name__ == '__main__':
                         , target_transform=target_transfm)
     dataloader = Dataloader(dataset, batch_size, small=partial_data, random=random)
     train(dataloader)
-    # visualise_recon(dataloader, num_sample=100)
