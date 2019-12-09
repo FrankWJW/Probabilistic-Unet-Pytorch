@@ -8,7 +8,6 @@ from prob_unet.Fcomb import Fcomb
 from prob_unet.Encoders import Encoder
 import numpy as np
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class ProbabilisticUnet(nn.Module):
@@ -21,7 +20,7 @@ class ProbabilisticUnet(nn.Module):
     no_cons_per_block: no convs per block in the (convolutional) encoder of prior and posterior
     """
 
-    def __init__(self, input_channels=1, num_classes=1, num_filters=[32,64,128,192], latent_dim=6, no_convs_fcomb=4, beta=10.0, initializers=None, isotropic=False):
+    def __init__(self, input_channels=1, num_classes=1, num_filters=[32,64,128,192], latent_dim=6, no_convs_fcomb=4, beta=10.0, initializers=None, isotropic=False, device='cuda'):
         super(ProbabilisticUnet, self).__init__()
         self.input_channels = input_channels
         self.num_classes = num_classes
@@ -115,7 +114,10 @@ class ProbabilisticUnet(nn.Module):
 
         return -(self.reconstruction_loss + self.beta * self.kl)
 
-    def visual_recon(self):
-        z_posterior = self.prior_latent_space.rsample()
-        reconstruction = self.reconstruct(z_posterior=z_posterior)
-        return reconstruction
+    def visual_recon(self, num_sample=10):
+        r = []
+        for samp in range(num_sample):
+            z_posterior = self.prior_latent_space.rsample()
+            reconstruction = self.reconstruct(z_posterior=z_posterior).cpu().numpy()
+            r.append(reconstruction)
+        return r
