@@ -2,7 +2,7 @@ import torch
 from dataset.load_LIDC_data import LIDC_IDRI
 from prob_unet.probabilistic_unet import ProbabilisticUnet
 from utils.utils import l2_regularisation
-from utils.utils import generalised_energy_distance
+from utils.utils import generalised_energy_distance, variance_ncc_dist
 from tqdm import tqdm
 import os
 import imageio
@@ -20,14 +20,17 @@ dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction_bool'
 
 # model for resume training and eval
-model_eval = 'checkpoint_probUnet_epoch240_latenDim6_totalLoss997976.3245849609_totalRecon187804.8690185547.pth.tar'
+model_eval = 'checkpoint_probUnet_epoch280_latenDim15_totalLoss399765.09509277344_total_reg_loss196037.28002929688.pth.tar'
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 32
+batch_size = 1
 beta = 10.0
-latent_dim = 6
+latent_dim = 15
 small = False
+num_sample = 16
+all_experts = True
+
 # kaiming_normal and orthogonal
 initializers = {'w':'kaiming_normal', 'b':'normal'}
 
@@ -63,7 +66,7 @@ def visualise_recon(data, num_sample=10):
             pbar.update(batch_size)
 
 
-def eval(data, num_sample=10):
+def eval(data, num_sample):
     print('evaluation...')
     test_list = data.test_indices
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
@@ -73,6 +76,7 @@ def eval(data, num_sample=10):
     net.eval()
     with torch.no_grad():
         energy_dist = []
+        ncc = []
         with tqdm(total=len(data.test_indices), unit='step') as pbar:
             for step, (patch, _, _) in enumerate(data.test_loader):
                 patch = patch.to(device)
@@ -82,15 +86,19 @@ def eval(data, num_sample=10):
                 binary_recon = binary_recon.astype(int)
                 reconstruction = np.asarray(binary_recon).reshape(-1, 128, 128)
 
-                mask = dataset.labels[test_list[step]]
+                if not all_experts:
+                    mask = dataset.labels[test_list[step]][np.random.randint(0,3)]
+                else:
+                    mask = dataset.labels[test_list[step]]
                 masks = np.asarray(mask).reshape(-1, 128, 128)
 
                 energy_dist.append(generalised_energy_distance(reconstruction, masks))
+                # ncc.append(variance_ncc_dist(reconstruction, masks))
 
                 pbar.update(step)
 
         print(energy_dist)
-        print(f'mean_energy_dist: {np.mean(energy_dist)}')
+        print(f'mean_energy_dist: {np.mean(energy_dist)}, mean_average_normalised_cross_correlation:')
 
 
 
@@ -99,6 +107,6 @@ if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm,
                         input_transform=input_transfm
                         , target_transform=target_transfm)
-    dataloader = Dataloader(dataset, batch_size=1, small=small)
-    eval(dataloader, num_sample=16)
+    dataloader = Dataloader(dataset, batch_size, small=small)
+    eval(dataloader, num_sample)
     # visualise_recon(dataloader)
