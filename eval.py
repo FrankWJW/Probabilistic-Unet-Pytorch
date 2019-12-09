@@ -73,21 +73,24 @@ def eval(data, num_sample=10):
     net.eval()
     with torch.no_grad():
         energy_dist = []
-        for step, (patch, _, _) in enumerate(data.test_loader):
-            patch = patch.to(device)
-            net.forward(patch, _, training=False)
+        with tqdm(total=len(data.test_indices), unit='step') as pbar:
+            for step, (patch, _, _) in enumerate(data.test_loader):
+                patch = patch.to(device)
+                net.forward(patch, _, training=False)
 
-            binary_recon = np.asarray(net.visual_recon(num_sample)) > 0
-            binary_recon.astype(float)
-            reconstruction = np.asarray(binary_recon).reshape(-1, 128, 128)
+                binary_recon = np.asarray(net.visual_recon(num_sample)) > 0
+                binary_recon = binary_recon.astype(int)
+                reconstruction = np.asarray(binary_recon).reshape(-1, 128, 128)
 
-            mask = dataset.labels[test_list[step]]
-            masks = np.asarray(mask).reshape(-1, 128, 128)
+                mask = dataset.labels[test_list[step]]
+                masks = np.asarray(mask).reshape(-1, 128, 128)
 
-            energy_dist.append(generalised_energy_distance(reconstruction, masks))
+                energy_dist.append(generalised_energy_distance(reconstruction, masks))
 
+                pbar.update(step)
 
-        print(np.mean(energy_dist))
+        print(energy_dist)
+        print(f'mean_energy_dist: {np.mean(energy_dist)}')
 
 
 
@@ -97,5 +100,5 @@ if __name__ == '__main__':
                         input_transform=input_transfm
                         , target_transform=target_transfm)
     dataloader = Dataloader(dataset, batch_size=1, small=small)
-    eval(dataloader, num_sample=10)
+    eval(dataloader, num_sample=16)
     # visualise_recon(dataloader)

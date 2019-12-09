@@ -101,4 +101,4 @@ def generalised_energy_distance(sample_arr, gt_arr):
             # print(dist_fct(gt_arr[i,...], gt_arr[j,...]))
             d_yy.append(dist_fct(gt_arr[i,...], gt_arr[j,...]))
 
-    return (2./(N*M))*sum(d_sy) - (1./N**2)*sum(d_ss) - (1./M**2)*sum(d_yy)
+    return ((2./(N*M))*sum(d_sy) - (1./N**2)*sum(d_ss) - (1./M**2)*sum(d_yy))
