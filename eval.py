@@ -24,11 +24,11 @@ model_eval = 'checkpoint_probUnet_epoch280_latenDim15_totalLoss399765.0950927734
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 1
+batch_size = 32
 beta = 10.0
 latent_dim = 15
 small = False
-num_sample = 16
+num_sample = 10
 all_experts = True
 
 # kaiming_normal and orthogonal
@@ -61,7 +61,7 @@ def visualise_recon(data, num_sample=10):
                     imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_mask.png'), mask[i].cpu().numpy().T)
                     for s in range(len(reconstruction)):
                         r = reconstruction[s][i].T > 0
-                        imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_recon_{s}th_s.png'), r.astype(float))
+                        imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_recon_{s}th_s.png'), r.astype(int))
                 break
             pbar.update(batch_size)
 
@@ -108,5 +108,5 @@ if __name__ == '__main__':
                         input_transform=input_transfm
                         , target_transform=target_transfm)
     dataloader = Dataloader(dataset, batch_size, small=small)
-    eval(dataloader, num_sample)
-    # visualise_recon(dataloader)
+    # eval(dataloader, num_sample)
+    visualise_recon(dataloader)
