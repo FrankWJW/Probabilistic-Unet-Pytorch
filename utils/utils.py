@@ -52,24 +52,18 @@ from medpy.metric import jc
 from tqdm import tqdm
 
 
-def dist_fct(m1, m2, n_labels=1):
-    per_label_iou = []
-    for lbl in range(n_labels):
+def dist_fct(m1, m2):
 
-        # assert not lbl == 0  # tmp check
-        m1_bin = (m1 != lbl) * 1
-        m2_bin = (m2 != lbl) * 1
-
-        if np.sum(m1_bin) == 0 and np.sum(m2_bin) == 0:
-            per_label_iou.append(1)
-        elif np.sum(m1_bin) > 0 and np.sum(m2_bin) == 0 or np.sum(m1_bin) == 0 and np.sum(m2_bin) > 0:
-            per_label_iou.append(0)
-        else:
-            per_label_iou.append(jc(m1_bin, m2_bin))
+    if np.sum(m1) == 0 and np.sum(m2) == 0:
+        per_label_iou = 1
+    elif np.sum(m1) > 0 and np.sum(m2) == 0 or np.sum(m1) == 0 and np.sum(m2) > 0:
+        per_label_iou=0
+    else:
+        per_label_iou = jc(m1, m2)
 
     # print(1-(sum(per_label_iou) / n_labels))
 
-    return 1 - (sum(per_label_iou) / n_labels)
+    return 1 - per_label_iou
 
 
 def generalised_energy_distance(sample_arr, gt_arr):
