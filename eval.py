@@ -20,13 +20,13 @@ dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction_bool'
 
 # model for resume training and eval
-model_eval = 'checkpoint_probUnet_epoch280_latenDim15_totalLoss399765.09509277344_total_reg_loss196037.28002929688.pth.tar'
+model_eval = 'checkpoint_probUnet_epoch260_latent_dim3_totalLoss419940.50201416016_total_reg_loss186588.7041015625.pth.tar'
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 32
+batch_size = 1
 beta = 10.0
-latent_dim = 15
+latent_dim = 3
 small = False
 num_sample = 10
 all_experts = True
@@ -108,5 +108,5 @@ if __name__ == '__main__':
                         input_transform=input_transfm
                         , target_transform=target_transfm)
     dataloader = Dataloader(dataset, batch_size, small=small)
-    # eval(dataloader, num_sample)
-    visualise_recon(dataloader)
+    eval(dataloader, num_sample)
+    # visualise_recon(dataloader)
