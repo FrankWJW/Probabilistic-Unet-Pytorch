@@ -17,7 +17,7 @@ import utils.joint_transforms as joint_transforms
 # dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
 # dirs
-data_dir = 'D:\LIDC\data'
+data_dir = 'D:\Datasets\LIDC\data'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction3'
@@ -25,7 +25,7 @@ data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
 # model for resume training and eval
 model_eval = ''
-resume_model = ''
+resume_model = 'checkpoint_probUnet_epoch420_latenDim6_totalLoss1676659.6958618164_total_reg_loss262647.4928588867_isotropic_False.pth.tar'
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -34,7 +34,7 @@ lr = 1e-4
 weight_decay = 1e-5
 epochs = 600
 partial_data = False
-resume = False
+resume = True
 latent_dim = 6
 beta = 10.0
 isotropic = False
@@ -68,7 +68,7 @@ def train(data):
 
     if resume:
         print('loading checkpoint model to resume...')
-        resume_dict = torch.load(r_model)
+        resume_dict = torch.load(r_model, map_location=device)
         net.load_state_dict(resume_dict['state_dict'])
         optimizer.load_state_dict(resume_dict['optimizer'])
         scheduler.load_state_dict(resume_dict['scheduler'])
@@ -76,9 +76,9 @@ def train(data):
     else:
         epochs_trained = 0
 
-    for epoch in range(epochs - epochs_trained):
+    for epoch in range(epochs_trained, epochs):
         total_loss, total_reg_loss = 0, 0
-        with tqdm(total=len(data.train_indices), desc=f'Epoch {epoch + 1}/{epochs - epochs_trained}', unit='patch') as pbar:
+        with tqdm(total=len(data.train_indices), desc=f'Epoch {epoch + 1}/{epochs}', unit='patch') as pbar:
             for step, (patch, mask, _) in enumerate(data.train_loader):
                 patch = patch.to(device)
                 mask = mask.to(device)
