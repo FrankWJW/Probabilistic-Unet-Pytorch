@@ -20,15 +20,15 @@ dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction_bool'
 
 # model for resume training and eval
-model_eval = 'checkpoint_probUnet_epoch280_latenDim15_totalLoss399765.09509277344_total_reg_loss196037.28002929688.pth.tar'
+model_eval = 'checkpoint_probUnet_epoch420_latenDim6_totalLoss1676659.6958618164_total_reg_loss262647.4928588867_isotropic_False.pth.tar'
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 batch_size = 1
 beta = 10.0
-latent_dim = 15
+latent_dim = 6
 small = False
-num_sample = 10
+num_sample = [1, 4, 8, 16, 50, 100]
 all_experts = True
 
 # kaiming_normal and orthogonal
@@ -67,7 +67,7 @@ def visualise_recon(data, num_sample=10):
 
 
 def eval(data, num_sample):
-    print('evaluation...')
+    print(f'evaluation, num_sample:{num_sample}, all_expert:{all_experts}')
     test_list = data.test_indices
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
                             no_convs_fcomb=4, beta=beta, initializers=initializers).to(device)
@@ -97,7 +97,7 @@ def eval(data, num_sample):
 
                 pbar.update(step)
 
-        print(energy_dist)
+        # print(energy_dist)
         print(f'mean_energy_dist: {np.mean(energy_dist)}, mean_average_normalised_cross_correlation:')
 
 
@@ -108,5 +108,6 @@ if __name__ == '__main__':
                         input_transform=input_transfm
                         , target_transform=target_transfm)
     dataloader = Dataloader(dataset, batch_size, small=small)
-    eval(dataloader, num_sample)
+    for s in num_sample:
+        eval(dataloader, s)
     # visualise_recon(dataloader)
