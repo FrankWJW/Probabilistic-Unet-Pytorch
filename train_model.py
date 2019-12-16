@@ -33,12 +33,12 @@ batch_size = 64
 lr = 1e-2
 weight_decay = 1e-5
 epochs = 600
-partial_data = True
+partial_data = False
 resume = False
 latent_dim = 6
 beta = 1.0
 isotropic = False
-save_ckpt = False
+save_ckpt = True
 random = False
 # kaiming_normal and orthogonal
 initializers = {'w':'kaiming_normal', 'b':'normal'}
