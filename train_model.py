@@ -30,13 +30,13 @@ resume_model = 'checkpoint_probUnet_epoch420_latenDim6_totalLoss1676659.69586181
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 batch_size = 32
-lr = 1e-4
-weight_decay = 1e-5
+lr = 1e-2
+weight_decay = 1e-3
 epochs = 600
 partial_data = False
-resume = True
+resume = False
 latent_dim = 6
-beta = 10.0
+beta = 1.0
 isotropic = False
 save_ckpt = False
 random = False
@@ -47,13 +47,13 @@ eval_model = os.path.join(dir_checkpoint, model_eval)
 r_model = os.path.join(dir_checkpoint, resume_model)
 
 # Transforms
-# joint_transfm = joint_transforms.Compose([joint_transforms.RandomHorizontallyFlip(),
-#                                           joint_transforms.RandomSizedCrop(128),
-#                                           joint_transforms.RandomRotate(60)])
-# input_transfm = transforms.Compose([transforms.ToPILImage()])
+joint_transfm = joint_transforms.Compose([joint_transforms.RandomHorizontallyFlip(),
+                                          joint_transforms.RandomSizedCrop(128),
+                                          joint_transforms.RandomRotate(60)])
+input_transfm = transforms.Compose([transforms.ToPILImage()])
 target_transfm = transforms.Compose([transforms.ToTensor()])
-joint_transfm=None
-input_transfm=None
+# joint_transfm=None
+# input_transfm=None
 
 
 def train(data):
@@ -63,8 +63,10 @@ def train(data):
                             latent_dim=latent_dim, no_convs_fcomb=4, beta=beta, initializers=initializers,
                             isotropic=isotropic).to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
+
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)
     milestones = list(range(0, epochs, int(epochs / 4)))
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.4)
+    # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.4)
 
     if resume:
         print('loading checkpoint model to resume...')
@@ -78,7 +80,7 @@ def train(data):
 
     for epoch in range(epochs_trained, epochs):
         total_loss, total_reg_loss = 0, 0
-        with tqdm(total=len(data.train_indices), desc=f'Epoch {epoch + 1}/{epochs}', unit='patch') as pbar:
+        with tqdm(total=len(data.train_indices), desc=f'Epoch {epoch + 1}/{epochs}, LR {scheduler.get_lr()}', unit='patch') as pbar:
             for step, (patch, mask, _) in enumerate(data.train_loader):
                 patch = patch.to(device)
                 mask = mask.to(device)
