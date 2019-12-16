@@ -13,12 +13,12 @@ import utils.joint_transforms as joint_transforms
 
 # if running on server, change dir to following:
 
-data_dir = '/home/jw7u18/LIDC/data'
-dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
+# data_dir = '/home/jw7u18/LIDC/data'
+# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
 # dirs
-# data_dir = 'D:\Datasets\LIDC\data'
-# dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+data_dir = 'D:\Datasets\LIDC\data'
+dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction3'
 data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
@@ -29,8 +29,8 @@ resume_model = ''
 
 # hyper para
 device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
-batch_size = 64
-lr = 1e-2
+batch_size = 32
+lr = 1e-4
 weight_decay = 1e-5
 epochs = 600
 partial_data = False
@@ -64,9 +64,7 @@ def train(data):
                             isotropic=isotropic).to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
 
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.5)
-    # milestones = list(range(0+int(epochs / 6), epochs, int(epochs / 6)))
-    # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.4)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=int(epochs/5), gamma=0.4)
 
     if resume:
         print('loading checkpoint model to resume...')
