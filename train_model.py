@@ -25,13 +25,13 @@ data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
 # model for resume training and eval
 model_eval = ''
-resume_model = 'checkpoint_probUnet_epoch420_latenDim6_totalLoss1676659.6958618164_total_reg_loss262647.4928588867_isotropic_False.pth.tar'
+resume_model = ''
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 batch_size = 32
 lr = 1e-2
-weight_decay = 1e-3
+weight_decay = 1e-5
 epochs = 600
 partial_data = False
 resume = False
@@ -64,8 +64,8 @@ def train(data):
                             isotropic=isotropic).to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
 
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)
-    milestones = list(range(0, epochs, int(epochs / 4)))
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.5)
+    # milestones = list(range(0+int(epochs / 6), epochs, int(epochs / 6)))
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.4)
 
     if resume:
@@ -80,10 +80,13 @@ def train(data):
 
     for epoch in range(epochs_trained, epochs):
         total_loss, total_reg_loss = 0, 0
+        scheduler.step()
         with tqdm(total=len(data.train_indices), desc=f'Epoch {epoch + 1}/{epochs}, LR {scheduler.get_lr()}', unit='patch') as pbar:
             for step, (patch, mask, _) in enumerate(data.train_loader):
                 patch = patch.to(device)
                 mask = mask.to(device)
+                optimizer.zero_grad()
+
                 net.forward(patch, mask, training=True)
                 elbo = net.elbo(mask)
                 reg_loss = l2_regularisation(net.posterior) + l2_regularisation(net.prior) + l2_regularisation(net.fcomb.layers)
@@ -93,10 +96,8 @@ def train(data):
                 total_reg_loss += reg_loss.item()
                 pbar.set_postfix(**{'total_loss': total_loss, 'total_reg_loss' : total_reg_loss})
 
-                optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-                scheduler.step()
 
                 pbar.update(batch_size)
 
