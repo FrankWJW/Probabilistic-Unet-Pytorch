@@ -13,12 +13,12 @@ import utils.joint_transforms as joint_transforms
 
 # if running on server, change dir to following:
 
-# data_dir = '/home/jw7u18/LIDC/data'
-# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
+data_dir = '/home/jw7u18/LIDC/data'
+dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
 # dirs
-data_dir = 'D:\Datasets\LIDC\data'
-dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+# data_dir = 'D:\Datasets\LIDC\data'
+# dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction3'
 data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
@@ -28,12 +28,12 @@ model_eval = ''
 resume_model = ''
 
 # hyper para
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 32
+device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
+batch_size = 64
 lr = 1e-2
 weight_decay = 1e-5
 epochs = 600
-partial_data = False
+partial_data = True
 resume = False
 latent_dim = 6
 beta = 1.0

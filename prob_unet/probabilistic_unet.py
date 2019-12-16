@@ -8,7 +8,7 @@ from prob_unet.Fcomb import Fcomb
 from prob_unet.Encoders import Encoder
 import numpy as np
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 
 
 class ProbabilisticUnet(nn.Module):
