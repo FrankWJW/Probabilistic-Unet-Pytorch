@@ -17,8 +17,8 @@ import utils.joint_transforms as joint_transforms
 # dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
 # if running on remote machine, change dir to following:
-data_dir = 'C:\Users\junwe\Desktop\probunet_pytorch_data_ckpt\data'
-dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt\ckpt'
+data_dir = 'C:\\Users\junwe\Desktop\probunet_pytorch_data_ckpt\data'
+dir_checkpoint = 'C:\\Users\junwe\Desktop\probunet_pytorch_data_ckpt\ckpt'
 
 # if running on local machine, change dir to following:
 # data_dir = 'D:\Datasets\LIDC\data'
@@ -35,8 +35,8 @@ resume_model = ''
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 32
-lr = 1e-4
+batch_size = 64
+lr = 1e-3
 weight_decay = 1e-5
 epochs = 600
 partial_data = False
@@ -114,9 +114,6 @@ def train(data):
                 'scheduler': scheduler.state_dict(),
             }, dir_checkpoint, f'checkpoint_probUnet_epoch{epoch}_latenDim{latent_dim}_totalLoss{total_loss}'
                                f'_total_reg_loss{total_reg_loss}_isotropic_{isotropic}.pth.tar')
-
-
-
 
 
 def save_checkpoint(state, save_path, filename):
