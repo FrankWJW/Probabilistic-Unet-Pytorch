@@ -11,15 +11,21 @@ from dataset.dataloader import Dataloader
 from torchvision import transforms
 import utils.joint_transforms as joint_transforms
 
+
 # if running on server, change dir to following:
+# data_dir = '/home/jw7u18/LIDC/data'
+# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
-data_dir = '/home/jw7u18/LIDC/data'
-dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
+# if running on remote machine, change dir to following:
+data_dir = 'C:\Users\junwe\Desktop\probunet_pytorch_data_ckpt\data'
+dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt\ckpt'
 
-# dirs
+# if running on local machine, change dir to following:
 # data_dir = 'D:\Datasets\LIDC\data'
 # dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
+
+# ---------------------------------------------------------------------------
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction3'
 data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
 
@@ -28,7 +34,7 @@ model_eval = ''
 resume_model = ''
 
 # hyper para
-device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 batch_size = 32
 lr = 1e-4
 weight_decay = 1e-5
@@ -61,10 +67,10 @@ def train(data):
           f"\nsavingCKPT: {save_ckpt}\nlr_initial: {lr}\nbatchSize: {batch_size}")
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32,64,128,192],
                             latent_dim=latent_dim, no_convs_fcomb=4, beta=beta, initializers=initializers,
-                            isotropic=isotropic).to(device)
+                            isotropic=isotropic, device=device).to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
 
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=int(epochs/5), gamma=0.4)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=int(epochs/6), gamma=0.4)
 
     if resume:
         print('loading checkpoint model to resume...')
