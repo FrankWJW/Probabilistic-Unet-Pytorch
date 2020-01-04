@@ -16,11 +16,10 @@ import utils.joint_transforms as joint_transforms
 # data_dir = '/home/jw7u18/LIDC/data'
 # dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
-# if running on remote machine, change dir to following:
-data_dir = 'C:\\Users\junwe\Desktop\probunet_pytorch_data_ckpt\data'
-dir_checkpoint = 'C:\\Users\junwe\Desktop\probunet_pytorch_data_ckpt\ckpt'
+data_dir = '/home/jw7u18/LIDC/data'
+dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
-# if running on local machine, change dir to following:
+# dirs
 # data_dir = 'D:\Datasets\LIDC\data'
 # dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
@@ -35,8 +34,8 @@ resume_model = ''
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 64
-lr = 1e-3
+batch_size = 32
+lr = 1e-4
 weight_decay = 1e-5
 epochs = 600
 partial_data = False

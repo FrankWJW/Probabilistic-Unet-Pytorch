@@ -17,10 +17,10 @@ import utils.joint_transforms as joint_transforms
 data_dir = 'D:\Datasets\LIDC\data'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
-recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction_bool'
+recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction_latenDim_6'
 
 # model for resume training and eval
-model_eval = 'checkpoint_probUnet_epoch420_latenDim6_totalLoss1676659.6958618164_total_reg_loss262647.4928588867_isotropic_False.pth.tar'
+model_eval = 'checkpoint_probUnet_epoch510_latenDim6_totalLoss828750.686126709_total_reg_loss294305.4841308594_isotropic_False.pth.tar'
 
 # hyper para
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -45,7 +45,7 @@ target_transfm = transforms.Compose([transforms.ToTensor()])
 def visualise_recon(data, num_sample=10):
     print(f'loading model to eval...{model_eval}')
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
-                            no_convs_fcomb=4, beta=beta, initializers=initializers).to(device)
+                            no_convs_fcomb=4, beta=beta, initializers=initializers, device=device).to(device)
     resume_dict = torch.load(eval_model, map_location=device)
     net.load_state_dict(resume_dict['state_dict'])
     net.eval()
@@ -68,9 +68,10 @@ def visualise_recon(data, num_sample=10):
 
 def eval(data, num_sample):
     print(f'evaluation, num_sample:{num_sample}, all_expert:{all_experts}')
+    print(f'loading model to eval...{model_eval}')
     test_list = data.test_indices
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
-                            no_convs_fcomb=4, beta=beta, initializers=initializers).to(device)
+                            no_convs_fcomb=4, beta=beta, initializers=initializers, device=device).to(device)
     resume_dict = torch.load(eval_model, map_location=device)
     net.load_state_dict(resume_dict['state_dict'])
     net.eval()
@@ -101,8 +102,6 @@ def eval(data, num_sample):
         print(f'mean_energy_dist: {np.mean(energy_dist)}, mean_average_normalised_cross_correlation:')
 
 
-
-
 if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm,
                         input_transform=input_transfm
@@ -110,4 +109,4 @@ if __name__ == '__main__':
     dataloader = Dataloader(dataset, batch_size, small=small)
     for s in num_sample:
         eval(dataloader, s)
-    # visualise_recon(dataloader)
+    visualise_recon(dataloader)
