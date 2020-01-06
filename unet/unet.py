@@ -2,8 +2,8 @@
 
 import torch.nn.functional as F
 
-from .unet_blocks import *
-# from .Unet_ResBlock import *
+# from .unet_blocks import *
+from .Unet_ResBlock import *
 
 
 class UNet(nn.Module):
@@ -16,7 +16,7 @@ class UNet(nn.Module):
         self.if_last_layer = if_last_layer
         self.initializers = initializers
 
-        self.inc = SequentialConv(self.in_channels, 32)
+        self.inc = ResBlock(self.in_channels, 32)
         self.down1 = DownConvBlock(32, 64)
         self.down2 = DownConvBlock(64, 128)
         self.down3 = DownConvBlock(128, 192)
