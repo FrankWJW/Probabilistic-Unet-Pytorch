@@ -68,13 +68,14 @@ def train(data):
         epochs_trained = 0
 
     net.train()
-    for epoch in range(epochs - epochs_trained):
-
+    for epoch in range(epochs_trained, epochs):
         total_loss = 0
+        scheduler.step()
         with tqdm(total=len(data.train_indices), desc=f'Epoch {epoch + 1}/{epochs}', unit='patch') as pbar:
             for step, (patch, mask, _) in enumerate(data.train_loader):
                 patch = patch.to(device)
                 mask = mask.to(device)
+                optimizer.zero_grad()
 
                 patch_pred = net(patch)
 
@@ -83,10 +84,8 @@ def train(data):
                 total_loss += loss.item()
                 pbar.set_postfix(**{'loss_total': total_loss})
 
-                optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-                scheduler.step()
 
                 pbar.update(batch_size)
 
@@ -136,6 +135,6 @@ if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=None, input_transform=None
                         , target_transform=target_transfm)
     # dataset.save_data_set(data_save_dir)
-    dataloader = Dataloader(dataset, batch_size=1, small=partial_data)
+    dataloader = Dataloader(dataset, batch_size=batch_size, small=partial_data)
     train(dataloader)
     # eval(dataloader)
