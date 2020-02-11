@@ -6,6 +6,7 @@ from unet.unet import UNet
 from prob_unet.ConvGaussian import AxisAlignedConvGaussian
 from prob_unet.Fcomb import Fcomb
 from prob_unet.Encoders import Encoder
+from scipy.stats import norm
 import numpy as np
 
 
@@ -62,8 +63,7 @@ class ProbabilisticUnet(nn.Module):
             #z_prior = self.prior_latent_space.base_dist.loc 
             z_prior = self.prior_latent_space.sample()
             self.z_prior_sample = z_prior
-        return self.fcomb.forward(self.unet_features,z_prior)
-
+        return self.fcomb.forward(self.unet_features,self.z_prior_sample)
 
     def reconstruct(self, use_posterior_mean=False, calculate_posterior=False, z_posterior=None):
         """
@@ -114,10 +114,24 @@ class ProbabilisticUnet(nn.Module):
 
         return -(self.reconstruction_loss + self.beta * self.kl)
 
-    def visual_recon(self, num_sample=10):
+    def visual_recon(self, num_sample=10, manifold_visualisation=False):
         r = []
-        for samp in range(num_sample):
-            z_posterior = self.prior_latent_space.rsample()
-            reconstruction = self.reconstruct(z_posterior=z_posterior).cpu().numpy()
-            r.append(reconstruction)
-        return r
+        if manifold_visualisation == True:
+            assert self.latent_dim == 2
+            nx = ny = 10
+            x_values = np.linspace(.05, .95, nx)
+            y_values = np.linspace(.05, .95, ny)
+
+            canvas = np.empty((128 * ny, 128 * nx))
+            for i, yi in enumerate(x_values):
+                for j, xi in enumerate(y_values):
+                    z_posterior = np.array([norm.ppf(xi), norm.ppf(yi)]).astype('float32').T
+                    z_posterior = torch.unsqueeze(torch.tensor(z_posterior), dim=0).cuda()
+                    canvas[(nx-i-1)*128:(nx-i)*128, j*128:(j+1)*128] = self.reconstruct(z_posterior=z_posterior).cpu().numpy().reshape(128, 128)
+            return canvas
+        else:
+            for samp in range(num_sample):
+                z_posterior = self.prior_latent_space.rsample()
+                reconstruction = self.reconstruct(z_posterior=z_posterior).cpu().numpy()
+                r.append(reconstruction)
+            return r

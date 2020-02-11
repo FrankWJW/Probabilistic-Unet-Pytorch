@@ -13,7 +13,7 @@ import utils.joint_transforms as joint_transforms
 
 def train(data):
     print(f"isotropic gaussian: {isotropic}\ninitialisation: {initializers['w']}"
-          f"\nsavingCKPT: {save_ckpt}\nlr_initial: {lr}\nbatchSize: {batch_size}")
+          f"\nsavingCKPT: {save_ckpt}\nlr_initial: {lr}\nbatchSize: {batch_size}\nLatent_dim:{latent_dim}")
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32,64,128,192],
                             latent_dim=latent_dim, no_convs_fcomb=4, beta=beta, initializers=initializers,
                             isotropic=isotropic, device=device).to(device)
