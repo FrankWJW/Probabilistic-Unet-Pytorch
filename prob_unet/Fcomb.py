@@ -70,7 +70,7 @@ class Fcomb(nn.Module):
             z = torch.unsqueeze(z,3)
             z = self.tile(z, 3, feature_map.shape[self.spatial_axes[1]])
 
-            #Concatenate the feature map (output of the UNet) and the sample taken from the latent space
+            # Concatenate the feature map (output of the UNet) and the sample taken from the latent space
             feature_map = torch.cat((feature_map, z), dim=self.channel_axis)
             output = self.layers(feature_map)
             return self.last_layer(output)

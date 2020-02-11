@@ -9,43 +9,35 @@ import imageio
 import numpy as np
 import statistics
 from dataset.dataloader import Dataloader
-
+from configs import *
 from torchvision import transforms
 import utils.joint_transforms as joint_transforms
+import matplotlib.pyplot as plt
 
-# dirs
-data_dir = 'D:\Datasets\LIDC\data'
-dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
-
-recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction_latenDim_6'
-
-# model for resume training and eval
-model_eval = 'checkpoint_probUnet_epoch510_latenDim6_totalLoss828750.686126709_total_reg_loss294305.4841308594_isotropic_False.pth.tar'
-
-# hyper para
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 1
-beta = 10.0
-latent_dim = 6
-small = False
-num_sample = [1, 4, 8, 16, 50, 100]
-all_experts = True
-
-# kaiming_normal and orthogonal
-initializers = {'w':'kaiming_normal', 'b':'normal'}
-
-eval_model = os.path.join(dir_checkpoint, model_eval)
-
-# Transforms
-joint_transfm = None
-input_transfm = None
-target_transfm = transforms.Compose([transforms.ToTensor()])
-
-
-def visualise_recon(data, num_sample=10):
+def visualise_manifold(data, net):
+    assert batch_size == 1
     print(f'loading model to eval...{model_eval}')
-    net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
-                            no_convs_fcomb=4, beta=beta, initializers=initializers, device=device).to(device)
+    resume_dict = torch.load(eval_model, map_location=device)
+    net.load_state_dict(resume_dict['state_dict'])
+    net.eval()
+    with torch.no_grad():
+        for step, (patch, mask, _) in enumerate(data.test_loader):
+            patch = patch.to(device)
+            net.forward(patch, _, training=False)
+            canvas = net.visual_recon(manifold_visualisation=True)
+            canvas = (canvas.T > 0).astype(int)
+
+            plt.figure()
+            plt.imshow(canvas, origin="upper", cmap="gray")
+            plt.figure()
+            plt.imshow(mask[0,0,:].T, cmap="gray")
+            plt.tight_layout()
+            plt.show()
+
+
+
+def visualise_recon(data, net, num_sample=10):
+    print(f'loading model to eval...{model_eval}')
     resume_dict = torch.load(eval_model, map_location=device)
     net.load_state_dict(resume_dict['state_dict'])
     net.eval()
@@ -66,12 +58,11 @@ def visualise_recon(data, num_sample=10):
             pbar.update(batch_size)
 
 
-def eval(data, num_sample):
+def generalised_energy_distance(data, net, num_sample):
     print(f'evaluation, num_sample:{num_sample}, all_expert:{all_experts}')
     print(f'loading model to eval...{model_eval}')
     test_list = data.test_indices
-    net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
-                            no_convs_fcomb=4, beta=beta, initializers=initializers, device=device).to(device)
+
     resume_dict = torch.load(eval_model, map_location=device)
     net.load_state_dict(resume_dict['state_dict'])
     net.eval()
@@ -106,7 +97,10 @@ if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm,
                         input_transform=input_transfm
                         , target_transform=target_transfm)
-    dataloader = Dataloader(dataset, batch_size, small=small)
-    for s in num_sample:
-        eval(dataloader, s)
-    visualise_recon(dataloader)
+    dataloader = Dataloader(dataset, batch_size, small=partial_data)
+    net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
+                            no_convs_fcomb=4, beta=beta, initializers=initializers, device=device).to(device)
+    # for s in num_sample:
+    #     generalised_energy_distance(dataloader, net, s)
+    # visualise_recon(dataloader, net)
+    visualise_manifold(dataloader, net)

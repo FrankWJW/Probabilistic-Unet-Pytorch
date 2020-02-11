@@ -1,11 +1,21 @@
+"""
+Res_Block in  Identity Mappings in Deep Residual Networks
+https://arxiv.org/pdf/1603.05027.pdf
+
+good source in https://medium.com/@nishanksingla/unet-with-resblock-for-semantic-segmentation-dd1766b4ff66
+"""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from utils.utils import init_weights,init_weights_orthogonal_normal
+from unet.unet_blocks import SequentialConv
 
-initializers = {'w':'orthogonal', 'b':'normal'}
 
-class SequentialConv(nn.Module):
+class ResBlock(nn.Module):
+    """
+    A basic ResBlock describe in
+    https://medium.com/@nishanksingla/unet-with-resblock-for-semantic-segmentation-dd1766b4ff66
+    """
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.layers = nn.Sequential(
@@ -15,18 +25,17 @@ class SequentialConv(nn.Module):
             nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
         )
-        if initializers['w'] == 'orthogonal':
-            self.layers.apply(init_weights_orthogonal_normal)
-        else:
-            self.layers.apply(init_weights)
+        self.conv1x1 = nn.Conv2d(in_channels, out_channels, kernel_size=1)
 
-    def forward(self, patch):
+    def forward(self, x):
 
-        return self.layers(patch)
+        residual = self.conv1x1(x)
+        group1 = self.layers(x)
+
+        out = residual + group1
+
+        return F.relu(out)
 
 
 class DownConvBlock(nn.Module):
@@ -39,7 +48,7 @@ class DownConvBlock(nn.Module):
         super().__init__()
         self.maxpool_conv = nn.Sequential(
             nn.MaxPool2d(2),
-            SequentialConv(in_channels, out_channels)
+            ResBlock(in_channels, out_channels)
         )
 
     def forward(self, x):
@@ -61,7 +70,7 @@ class UpConvBlock(nn.Module):
         else:
             self.up = nn.ConvTranspose2d(in_channels // 2, in_channels // 2, kernel_size=2, stride=2)
 
-        self.conv = SequentialConv(in_channels, out_channels)
+        self.conv = ResBlock(in_channels, out_channels)
 
     def forward(self, x1, x2):
         x1 = self.up(x1)
@@ -87,3 +96,4 @@ class OutConv(nn.Module):
 
     def forward(self, x):
         return self.conv(x)
+

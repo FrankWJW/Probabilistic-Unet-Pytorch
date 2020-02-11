@@ -17,7 +17,7 @@ import utils.joint_transforms as joint_transforms
 # dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
 # dirs
-data_dir = 'D:\LIDC\data'
+data_dir = 'D:\Datasets\LIDC\data'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation1'
 data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
@@ -34,7 +34,7 @@ weight_decay = 1e-5
 epochs = 300
 partial_data = False
 resume = False
-save_ckpt = True
+save_ckpt = False
 
 
 eval_model = os.path.join(dir_checkpoint, model_eval)
@@ -68,13 +68,14 @@ def train(data):
         epochs_trained = 0
 
     net.train()
-    for epoch in range(epochs - epochs_trained):
-
+    for epoch in range(epochs_trained, epochs):
         total_loss = 0
+        scheduler.step()
         with tqdm(total=len(data.train_indices), desc=f'Epoch {epoch + 1}/{epochs}', unit='patch') as pbar:
             for step, (patch, mask, _) in enumerate(data.train_loader):
                 patch = patch.to(device)
                 mask = mask.to(device)
+                optimizer.zero_grad()
 
                 patch_pred = net(patch)
 
@@ -83,10 +84,8 @@ def train(data):
                 total_loss += loss.item()
                 pbar.set_postfix(**{'loss_total': total_loss})
 
-                optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-                scheduler.step()
 
                 pbar.update(batch_size)
 
@@ -136,6 +135,6 @@ if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=None, input_transform=None
                         , target_transform=target_transfm)
     # dataset.save_data_set(data_save_dir)
-    dataloader = Dataloader(dataset, batch_size=1, small=partial_data)
-    # train(dataloader)
-    eval(dataloader)
+    dataloader = Dataloader(dataset, batch_size=batch_size, small=partial_data)
+    train(dataloader)
+    # eval(dataloader)
