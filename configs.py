@@ -24,7 +24,7 @@ model_eval = 'checkpoint_probUnet_epoch240_latenDim2_totalLoss327366.5144042969_
 resume_model = ''
 
 # ------------------------------------------training setting---------------------------------------------------
-save_ckpt = True
+save_ckpt = False
 random = False
 r_model = os.path.join(dir_checkpoint, resume_model)
 # -------------------------------------evaluation setting------------------------------------------------------------
@@ -34,14 +34,14 @@ eval_model = os.path.join(dir_checkpoint, model_eval)
 # --------------------------------------------------------hyper para-----------------------------------------------
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 1
+batch_size = 32
 lr = 1e-4
 weight_decay = 1e-5
 epochs = 600
 partial_data = False
 resume = False
 latent_dim = 2
-beta = 0
+beta = 1
 isotropic = False
 
 # kaiming_normal and orthogonal

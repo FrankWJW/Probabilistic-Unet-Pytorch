@@ -11,9 +11,11 @@ from configs import *
 from torchvision import transforms
 import utils.joint_transforms as joint_transforms
 
+
 def train(data):
-    print(f"isotropic gaussian: {isotropic}\ninitialisation: {initializers['w']}"
-          f"\nsavingCKPT: {save_ckpt}\nlr_initial: {lr}\nbatchSize: {batch_size}\nLatent_dim:{latent_dim}")
+    print(f"initialisation: {initializers['w']}"
+          f"\nsavingCKPT: {save_ckpt}\nlr_initial: {lr}\nbatchSize: {batch_size}\nLatent_dim:{latent_dim}"
+          f"\nbeta:{beta}")
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32,64,128,192],
                             latent_dim=latent_dim, no_convs_fcomb=4, beta=beta, initializers=initializers,
                             isotropic=isotropic, device=device).to(device)
@@ -41,9 +43,9 @@ def train(data):
                 optimizer.zero_grad()
 
                 net.forward(patch, mask, training=True)
-                elbo = net.elbo(mask)
+                elbo = net.elbo(mask, patch=patch)
                 reg_loss = l2_regularisation(net.posterior) + l2_regularisation(net.prior) + l2_regularisation(net.fcomb.layers)
-                loss = -elbo + 1e-5 * reg_loss
+                loss = elbo + 1e-5 * reg_loss
 
                 total_loss += loss.item()
                 total_reg_loss += reg_loss.item()

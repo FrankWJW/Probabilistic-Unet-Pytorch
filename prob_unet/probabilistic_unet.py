@@ -3,7 +3,7 @@
 from unet.unet_blocks import *
 from torch.distributions import Normal, Independent, kl
 from unet.unet import UNet
-from prob_unet.ConvGaussian import AxisAlignedConvGaussian
+from prob_unet.ConvGaussian import IsotropicGaussian
 from prob_unet.Fcomb import Fcomb
 from prob_unet.Encoders import Encoder
 from scipy.stats import norm
@@ -35,8 +35,8 @@ class ProbabilisticUnet(nn.Module):
         self.isotropic = isotropic
 
         self.unet = UNet(self.input_channels, self.num_classes, self.num_filters, if_last_layer=False).to(device)
-        self.prior = AxisAlignedConvGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim,  self.initializers, isotropic=isotropic).to(device)
-        self.posterior = AxisAlignedConvGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, isotropic=isotropic, posterior=True).to(device)
+        self.prior = IsotropicGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, isotropic=isotropic).to(device)
+        self.posterior = IsotropicGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, isotropic=isotropic, posterior=True).to(device)
         self.fcomb = Fcomb(self.num_filters, self.latent_dim, self.input_channels,
                            self.num_classes, self.no_convs_fcomb, self.initializers, use_tile=True, device=device).to(device)
 
@@ -46,8 +46,8 @@ class ProbabilisticUnet(nn.Module):
         in case training is True also construct posterior latent space
         """
         if training:
-            self.posterior_latent_space = self.posterior.forward(patch, segm)
-        self.prior_latent_space = self.prior.forward(patch)
+            self.posterior_z = self.posterior.forward(patch, segm)
+        self.prior_z = self.prior.forward(patch)
         self.unet_features = self.unet.forward(patch)
 
     def sample(self, testing=False):
@@ -56,12 +56,12 @@ class ProbabilisticUnet(nn.Module):
         and combining this with UNet features
         """
         if testing == False:
-            z_prior = self.prior_latent_space.rsample()
+            z_prior = self.prior_z.rsample()
             self.z_prior_sample = z_prior
         else:
             #You can choose whether you mean a sample or the mean here. For the GED it is important to take a sample.
-            #z_prior = self.prior_latent_space.base_dist.loc 
-            z_prior = self.prior_latent_space.sample()
+            #z_prior = self.prior_z.base_dist.loc 
+            z_prior = self.prior_z.sample()
             self.z_prior_sample = z_prior
         return self.fcomb.forward(self.unet_features,self.z_prior_sample)
 
@@ -72,10 +72,10 @@ class ProbabilisticUnet(nn.Module):
         calculate_posterior: use a provided sample or sample from posterior latent space
         """
         if use_posterior_mean:
-            z_posterior = self.posterior_latent_space.loc
+            z_posterior = self.posterior_z.loc
         else:
             if calculate_posterior:
-                z_posterior = self.posterior_latent_space.rsample()
+                z_posterior = self.posterior_z.rsample()
         return self.fcomb.forward(self.unet_features, z_posterior)
 
     def kl_divergence(self, analytic=True, calculate_posterior=False, z_posterior=None):
@@ -86,24 +86,30 @@ class ProbabilisticUnet(nn.Module):
         """
         if analytic:
             #Neeed to add this to torch source code, see: https://github.com/pytorch/pytorch/issues/13545
-            kl_div = kl.kl_divergence(self.posterior_latent_space, self.prior_latent_space)
+            kl_div = kl.kl_divergence(self.posterior_z, self.prior_z)
         else:
             if calculate_posterior:
-                z_posterior = self.posterior_latent_space.rsample()
-            log_posterior_prob = self.posterior_latent_space.log_prob(z_posterior)
-            log_prior_prob = self.prior_latent_space.log_prob(z_posterior)
+                z_posterior = self.posterior_z.rsample()
+            log_posterior_prob = self.posterior_z.log_prob(z_posterior)
+            log_prior_prob = self.prior_z.log_prob(z_posterior)
             kl_div = log_posterior_prob - log_prior_prob
         return kl_div
 
-    def elbo(self, segm, analytic_kl=True, reconstruct_posterior_mean=False):
+
+    def elbo(self, segm, analytic_kl=True, reconstruct_posterior_mean=False, patch=None):
+        assert type(patch) != None
         """
         Calculate the evidence lower bound of the log-likelihood of P(Y|X)
         """
 
-        criterion = nn.BCEWithLogitsLoss(size_average = False, reduce=False, reduction=None)
-        z_posterior = self.posterior_latent_space.rsample()
-        
-        self.kl = torch.mean(self.kl_divergence(analytic=analytic_kl, calculate_posterior=False, z_posterior=z_posterior))
+        # criterion = nn.BCEWithLogitsLoss(size_average = False, reduce=False, reduction=None)
+        criterion = nn.BCEWithLogitsLoss(reduction='sum')
+        z_posterior = self.posterior_z
+        log_var = z_posterior[:,0]
+        mean = z_posterior[:,1]
+        KLD = -0.5 * torch.sum(1 + log_var - mean.pow(2) - log_var.exp())
+        self.kl = KLD
+        # self.kl = torch.mean(self.kl_divergence(analytic=analytic_kl, calculate_posterior=False, z_posterior=z_posterior))
 
         #Here we use the posterior sample sampled above
         self.reconstruction = self.reconstruct(use_posterior_mean=reconstruct_posterior_mean, calculate_posterior=False, z_posterior=z_posterior)
@@ -112,7 +118,7 @@ class ProbabilisticUnet(nn.Module):
         self.reconstruction_loss = torch.sum(reconstruction_loss)
         self.mean_reconstruction_loss = torch.mean(reconstruction_loss)
 
-        return -(self.reconstruction_loss + self.beta * self.kl)
+        return (self.reconstruction_loss + self.beta * self.kl)/patch.size(0)
 
     def visual_recon(self, num_sample=10, manifold_visualisation=False):
         r = []
@@ -131,7 +137,8 @@ class ProbabilisticUnet(nn.Module):
             return canvas
         else:
             for samp in range(num_sample):
-                z_posterior = self.prior_latent_space.rsample()
+                # z_posterior = self.prior_z.rsample()
+                z_posterior = self.posterior_z
                 reconstruction = self.reconstruct(z_posterior=z_posterior).cpu().numpy()
                 r.append(reconstruction)
             return r
