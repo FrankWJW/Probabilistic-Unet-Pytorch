@@ -17,11 +17,10 @@ print('loading configs.........')
 data_dir = 'D:\Datasets\LIDC\data'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
-recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction_latenDim_6'
-
 # -------------------------------------model dir----------------------------------------------------
-model_eval = 'checkpoint_probUnet_epoch240_latenDim2_totalLoss327366.5144042969_total_reg_loss155248.80108642578_isotropic_False.pth.tar'
+model_eval = 'checkpoint_probUnet_epoch240_latenDim6_totalLoss28384.866355895996_total_reg_loss154254.47900390625_isotropic_False.pth.tar'
 resume_model = ''
+recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstructions\\' + model_eval[:-8]
 
 # ------------------------------------------training setting---------------------------------------------------
 save_ckpt = False
@@ -40,8 +39,8 @@ weight_decay = 1e-5
 epochs = 600
 partial_data = False
 resume = False
-latent_dim = 2
-beta = 1
+latent_dim = 6
+beta = 10
 isotropic = False
 
 # kaiming_normal and orthogonal

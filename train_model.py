@@ -76,4 +76,4 @@ if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm, input_transform=input_transfm
                         , target_transform=target_transfm)
     dataloader = Dataloader(dataset, batch_size, small=partial_data, random=random)
-    train(dataloader)
+    # train(dataloader)
