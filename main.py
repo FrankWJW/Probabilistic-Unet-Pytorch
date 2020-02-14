@@ -13,6 +13,7 @@ import utils.joint_transforms as joint_transforms
 from eval import visualise_manifold, dir_check, output_predict_img, generalised_energy_distance
 from train_model import train, dir_check
 
+
 if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm, input_transform=input_transfm
                         , target_transform=target_transfm, random=random)
