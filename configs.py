@@ -17,14 +17,19 @@ print('loading configs.........')
 data_dir = 'D:\Datasets\LIDC\data'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
-recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstruction_latenDim_6'
-
 # -------------------------------------model dir----------------------------------------------------
-model_eval = 'checkpoint_probUnet_epoch240_latenDim2_totalLoss327366.5144042969_total_reg_loss155248.80108642578_isotropic_False.pth.tar'
+model_eval = 'checkpoint_probUnet_epoch240_latenDim6_totalLoss28384.866355895996_total_reg_loss154254.47900390625_isotropic_False.pth.tar'
 resume_model = ''
+recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstructions\\' + model_eval[:-8]
+
+
+# check this setting to design to perform train or evaluation before you go
+# input str type 'train' / 'eval'
+train_or_eval = 'train'
 
 # ------------------------------------------training setting---------------------------------------------------
-save_ckpt = True
+save_ckpt = False
+shuffle_indices = False
 random = False
 r_model = os.path.join(dir_checkpoint, resume_model)
 # -------------------------------------evaluation setting------------------------------------------------------------
@@ -32,17 +37,19 @@ num_sample = [1, 4, 8, 16, 50, 100]
 all_experts = False
 eval_model = os.path.join(dir_checkpoint, model_eval)
 # --------------------------------------------------------hyper para-----------------------------------------------
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 1
+num_filters = [32, 64, 128, 256]
+batch_size = 32
 lr = 1e-4
 weight_decay = 1e-5
 epochs = 600
+
+# prob unet only
 partial_data = False
 resume = False
-latent_dim = 2
-beta = 0
-isotropic = False
+latent_dim = 6
+beta = 10
+# isotropic = False
 
 # kaiming_normal and orthogonal
 # initializers = {'w': 'kaiming_normal', 'b': 'normal'}

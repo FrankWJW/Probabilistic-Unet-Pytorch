@@ -24,19 +24,26 @@ def visualise_manifold(data, net):
         for step, (patch, mask, _) in enumerate(data.test_loader):
             patch = patch.to(device)
             net.forward(patch, _, training=False)
-            canvas = net.visual_recon(manifold_visualisation=True)
+            canvas = net.output_predict_tensor(manifold_visualisation=True, patch=patch)
             canvas = (canvas.T > 0).astype(int)
 
-            plt.figure()
+            plt.figure(1, figsize=(256,256))
             plt.imshow(canvas, origin="upper", cmap="gray")
-            plt.figure()
+            plt.figure(2, figsize=(128,128))
             plt.imshow(mask[0,0,:].T, cmap="gray")
             plt.tight_layout()
             plt.show()
 
+def dir_check(path):
+    try:
+        os.mkdir(path)
+    except OSError:
+        print("Creation of the directory %s failed" % path)
+    else:
+        print("Successfully created the directory %s " % path)
 
-
-def visualise_recon(data, net, num_sample=10):
+def output_predict_img(data, net, num_sample=10):
+    dir_check(recon_dir)
     print(f'loading model to eval...{model_eval}')
     resume_dict = torch.load(eval_model, map_location=device)
     net.load_state_dict(resume_dict['state_dict'])
@@ -47,7 +54,7 @@ def visualise_recon(data, net, num_sample=10):
                 patch = patch.to(device)
                 mask = mask.to(device)
                 net.forward(patch, mask, training=False)
-                reconstruction = net.visual_recon(num_sample)
+                reconstruction = net.output_predict_tensor(num_sample, patch=patch)
                 for i in range(batch_size):
                     imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_image.png'), patch[i].cpu().numpy().T)
                     imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_mask.png'), mask[i].cpu().numpy().T)
@@ -56,7 +63,6 @@ def visualise_recon(data, net, num_sample=10):
                         imageio.imwrite(os.path.join(recon_dir, str(step) + f'{i}_recon_{s}th_s.png'), r.astype(int))
                 break
             pbar.update(batch_size)
-
 
 def generalised_energy_distance(data, net, num_sample):
     print(f'evaluation, num_sample:{num_sample}, all_expert:{all_experts}')
@@ -74,7 +80,7 @@ def generalised_energy_distance(data, net, num_sample):
                 patch = patch.to(device)
                 net.forward(patch, _, training=False)
 
-                binary_recon = np.asarray(net.visual_recon(num_sample)) > 0
+                binary_recon = np.asarray(net.output_predict_tensor(num_sample, patch=patch)) > 0
                 binary_recon = binary_recon.astype(int)
                 reconstruction = np.asarray(binary_recon).reshape(-1, 128, 128)
 
@@ -90,7 +96,7 @@ def generalised_energy_distance(data, net, num_sample):
                 pbar.update(step)
 
         # print(energy_dist)
-        print(f'mean_energy_dist: {np.mean(energy_dist)}, mean_average_normalised_cross_correlation:')
+        print(f'mean_energy_dist: {np.mean(energy_dist)}')
 
 
 if __name__ == '__main__':
@@ -102,5 +108,5 @@ if __name__ == '__main__':
                             no_convs_fcomb=4, beta=beta, initializers=initializers, device=device).to(device)
     # for s in num_sample:
     #     generalised_energy_distance(dataloader, net, s)
-    # visualise_recon(dataloader, net)
-    visualise_manifold(dataloader, net)
+    output_predict_img(dataloader, net)
+    # visualise_manifold(dataloader, net)
