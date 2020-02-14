@@ -10,7 +10,7 @@ from dataset.dataloader import Dataloader
 from configs import *
 from torchvision import transforms
 import utils.joint_transforms as joint_transforms
-
+from eval import visualise_manifold, dir_check, output_predict_img, generalised_energy_distance
 
 def train(data):
     print(f"initialisation: {initializers['w']}"
@@ -66,7 +66,6 @@ def train(data):
             }, dir_checkpoint, f'checkpoint_probUnet_epoch{epoch}_latenDim{latent_dim}_totalLoss{total_loss}'
                                f'_total_reg_loss{total_reg_loss}_isotropic_{isotropic}.pth.tar')
 
-
 def save_checkpoint(state, save_path, filename):
     filename = os.path.join(save_path, filename)
     torch.save(state, filename)
@@ -74,6 +73,15 @@ def save_checkpoint(state, save_path, filename):
 
 if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=joint_transfm, input_transform=input_transfm
-                        , target_transform=target_transfm)
-    dataloader = Dataloader(dataset, batch_size, small=partial_data, random=random)
-    # train(dataloader)
+                        , target_transform=target_transfm, random=random)
+    dataloader = Dataloader(dataset, batch_size, small=partial_data, shuffle_indices=shuffle_indices)
+
+    if train_or_eval == 'eval':
+        net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
+                                no_convs_fcomb=4, beta=beta, initializers=initializers, device=device).to(device)
+        # for s in num_sample:
+        #     generalised_energy_distance(dataloader, net, s)
+        output_predict_img(dataloader, net)
+        # visualise_manifold(dataloader, net)
+    elif train_or_eval == 'train':
+        train(dataloader)

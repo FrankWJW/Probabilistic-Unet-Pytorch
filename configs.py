@@ -22,8 +22,14 @@ model_eval = 'checkpoint_probUnet_epoch240_latenDim6_totalLoss28384.866355895996
 resume_model = ''
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstructions\\' + model_eval[:-8]
 
+
+# check this setting to design to perform train or evaluation before you go
+# input str type 'train' / 'eval'
+train_or_eval = 'eval'
+
 # ------------------------------------------training setting---------------------------------------------------
 save_ckpt = False
+shuffle_indices = False
 random = False
 r_model = os.path.join(dir_checkpoint, resume_model)
 # -------------------------------------evaluation setting------------------------------------------------------------

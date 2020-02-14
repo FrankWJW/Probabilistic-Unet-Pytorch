@@ -7,50 +7,15 @@ import imageio
 import torch.nn as nn
 from dataset.dataloader import Dataloader
 import numpy as np
+from configs import *
 
 from torchvision import transforms
 import utils.joint_transforms as joint_transforms
 
-# if running on server, change dir to following:
-
-# data_dir = '/home/jw7u18/LIDC/data'
-# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
-
-# dirs
-data_dir = 'D:\Datasets\LIDC\data'
-dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
-recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\segmentation1'
-data_save_dir = 'D:\LIDC\LIDC-IDRI-out_final_transform'
-
-# model for resume training and eval
-model_eval = 'checkpoint_epoch280_totalLoss_6.8233585972338915.pth.tar'
-resume_model = 'checkpoint_epoch0_totalLoss_178.5162927210331.pth.tar'
-
-# hyper para
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-batch_size = 32
-lr = 1e-4
-weight_decay = 1e-5
-epochs = 300
-partial_data = False
-resume = False
-save_ckpt = False
-
-
-eval_model = os.path.join(dir_checkpoint, model_eval)
-r_model = os.path.join(dir_checkpoint, resume_model)
-
-joint_transfm = joint_transforms.Compose([joint_transforms.RandomHorizontallyFlip(),
-                                          joint_transforms.RandomSizedCrop(128),
-                                          joint_transforms.RandomRotate(60)])
-input_transfm = transforms.Compose([transforms.ToPILImage()])
-target_transfm = transforms.Compose([transforms.ToTensor()])
-
-# random elastic deformation, rotation, shearing, scaling and a randomly
-# translated crop that results in a tile size of 128 × 128 pixels
-
 
 def train(data):
+    print(f"initialisation: {initializers['w']}"
+          f"\nsavingCKPT: {save_ckpt}\nlr_initial: {lr}\nbatchSize: {batch_size}\n")
     net = UNet(in_channels=1, n_classes=1, bilinear=True).to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
     criterion = nn.BCEWithLogitsLoss()
@@ -96,7 +61,7 @@ def train(data):
                 'state_dict': net.state_dict(),
                 'optimizer': optimizer.state_dict(),
                 'scheduler': scheduler.state_dict(),
-            }, dir_checkpoint, 'checkpoint_epoch{}_totalLoss_{}.pth.tar'.format(epoch,total_loss))
+            }, dir_checkpoint, 'Unet_checkpoint_epoch{}_totalLoss_{}.pth.tar'.format(epoch,total_loss))
 
 
 def eval(data):
@@ -124,17 +89,11 @@ def save_checkpoint(state, save_path, filename):
         torch.save(state, filename)
 
 
-# TODO: save_transformed_data
-def save_transformed_data():
-    # imageio.imwrite(os.path.join(data_save_dir, f'epoch{epoch}_step{step}_image.png'), patch[0].squeeze().cpu().numpy())
-    # imageio.imwrite(os.path.join(data_save_dir, f'epoch{epoch}_step{step}_mask.png'), mask[0].squeeze().cpu().numpy())
-    return
-
 
 if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=None, input_transform=None
-                        , target_transform=target_transfm)
-    # dataset.save_data_set(data_save_dir)
-    dataloader = Dataloader(dataset, batch_size=batch_size, small=partial_data)
+                        , target_transform=target_transfm, random=random)
+    dataloader = Dataloader(dataset, batch_size=batch_size, small=partial_data, shuffle_indices=shuffle_indices)
+    if not random:
+        print('always using first experts annotation')
     train(dataloader)
-    # eval(dataloader)

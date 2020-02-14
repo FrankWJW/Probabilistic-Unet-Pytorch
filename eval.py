@@ -64,7 +64,6 @@ def output_predict_img(data, net, num_sample=10):
                 break
             pbar.update(batch_size)
 
-
 def generalised_energy_distance(data, net, num_sample):
     print(f'evaluation, num_sample:{num_sample}, all_expert:{all_experts}')
     print(f'loading model to eval...{model_eval}')
