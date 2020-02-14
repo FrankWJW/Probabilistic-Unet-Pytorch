@@ -25,7 +25,7 @@ recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstructions\\' + model_eval[
 
 # check this setting to design to perform train or evaluation before you go
 # input str type 'train' / 'eval'
-train_or_eval = 'eval'
+train_or_eval = 'train'
 
 # ------------------------------------------training setting---------------------------------------------------
 save_ckpt = False
@@ -37,17 +37,19 @@ num_sample = [1, 4, 8, 16, 50, 100]
 all_experts = False
 eval_model = os.path.join(dir_checkpoint, model_eval)
 # --------------------------------------------------------hyper para-----------------------------------------------
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+num_filters = [32, 64, 128, 256]
 batch_size = 32
 lr = 1e-4
 weight_decay = 1e-5
 epochs = 600
+
+# prob unet only
 partial_data = False
 resume = False
 latent_dim = 6
 beta = 10
-isotropic = False
+# isotropic = False
 
 # kaiming_normal and orthogonal
 # initializers = {'w': 'kaiming_normal', 'b': 'normal'}

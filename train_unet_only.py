@@ -13,10 +13,10 @@ from torchvision import transforms
 import utils.joint_transforms as joint_transforms
 
 
-def train(data):
+def train(data, UNet):
     print(f"initialisation: {initializers['w']}"
           f"\nsavingCKPT: {save_ckpt}\nlr_initial: {lr}\nbatchSize: {batch_size}\n")
-    net = UNet(in_channels=1, n_classes=1, bilinear=True).to(device)
+    net = UNet
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
     criterion = nn.BCEWithLogitsLoss()
     milestones = list(range(0, epochs, int(epochs / 4)))
@@ -94,6 +94,7 @@ if __name__ == '__main__':
     dataset = LIDC_IDRI(dataset_location=data_dir, joint_transform=None, input_transform=None
                         , target_transform=target_transfm, random=random)
     dataloader = Dataloader(dataset, batch_size=batch_size, small=partial_data, shuffle_indices=shuffle_indices)
+    net = UNet(in_channels=1, n_classes=1, bilinear=True, num_filters=num_filters).to(device)
     if not random:
         print('always using first experts annotation')
-    train(dataloader)
+    train(dataloader, net)
