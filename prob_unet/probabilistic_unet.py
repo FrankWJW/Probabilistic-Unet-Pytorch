@@ -40,7 +40,7 @@ class ProbabilisticUnet(nn.Module):
         self.fcomb = Fcomb(self.num_filters, self.latent_dim, self.input_channels,
                            self.num_classes, self.no_convs_fcomb, self.initializers, use_tile=True, device=device).to(device)
 
-    def forward(self, patch, segm, training=True):
+    def forward(self, patch, segm, training=False):
         """
         Construct prior latent space for patch and run patch through UNet,
         in case training is True also construct posterior latent space
