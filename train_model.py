@@ -35,7 +35,8 @@ def train(data):
 
     for epoch in range(epochs_trained, epochs):
         total_loss, total_reg_loss = 0, 0
-        scheduler.step()
+        if epoch != 0:
+            scheduler.step()
         with tqdm(total=len(data.train_indices), desc=f'Epoch {epoch + 1}/{epochs}, LR {scheduler.get_lr()}', unit='patch') as pbar:
             for step, (patch, mask, _) in enumerate(data.train_loader):
                 patch = patch.to(device)
