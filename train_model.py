@@ -16,9 +16,8 @@ def train(data):
     print(f"initialisation: {initializers['w']}"
           f"\nsavingCKPT: {save_ckpt}\nlr_initial: {lr}\nbatchSize: {batch_size}\nLatent_dim:{latent_dim}"
           f"\nbeta:{beta}\nnum_filters:{num_filters}")
-    net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32,64,128,192],
-                            latent_dim=latent_dim, no_convs_fcomb=4, beta=beta, initializers=initializers,
-                            isotropic=isotropic, device=device).to(device)
+    net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=num_filters,
+                            latent_dim=latent_dim, no_convs_fcomb=4, beta=beta, initializers=initializers, device=device).to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
 
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=int(epochs/6), gamma=0.4)
