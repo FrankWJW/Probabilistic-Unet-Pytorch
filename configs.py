@@ -8,14 +8,11 @@ import utils.joint_transforms as joint_transforms
 
 print('loading configs.........')
 # --------------------------------Data directory---------------------------------------------------
-# data_dir = '/home/jw7u18/LIDC/data'
-# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
+data_dir = '/home/jw7u18/LIDC/data'
+dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
-# data_dir = '/home/jw7u18/LIDC/data'
-# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
-
-data_dir = 'D:\Datasets\LIDC\data'
-dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+# data_dir = 'D:\Datasets\LIDC\data'
+# dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
 # -------------------------------------model dir----------------------------------------------------
 model_eval = 'checkpoint_probUnet_epoch240_latenDim6_totalLoss28384.866355895996_total_reg_loss154254.47900390625_isotropic_False.pth.tar'
