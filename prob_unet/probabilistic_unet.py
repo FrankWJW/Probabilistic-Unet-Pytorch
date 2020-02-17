@@ -3,7 +3,7 @@
 from unet.unet_blocks import *
 from torch.distributions import Normal, Independent, kl
 from unet.unet import UNet
-from prob_unet.ConvGaussian import IsotropicGaussian
+from prob_unet.ConvGaussian import IsotropicGaussian, AxisAlignedGaussian
 from prob_unet.Fcomb import Fcomb
 from prob_unet.Encoders import Encoder
 from scipy.stats import norm
@@ -21,7 +21,8 @@ class ProbabilisticUnet(nn.Module):
     no_cons_per_block: no convs per block in the (convolutional) encoder of prior and posterior
     """
 
-    def __init__(self, input_channels=1, num_classes=1, num_filters=[32,64,128,192], latent_dim=6, no_convs_fcomb=4, beta=10.0, initializers=None, isotropic=False, device='cuda'):
+    def __init__(self, input_channels=1, num_classes=1, num_filters=[32,64,128,192], latent_dim=6, no_convs_fcomb=4, beta=10.0, initializers=None, isotropic=False,
+                 device='cuda', axis_aligned = True):
         super(ProbabilisticUnet, self).__init__()
         self.input_channels = input_channels
         self.num_classes = num_classes
@@ -35,8 +36,14 @@ class ProbabilisticUnet(nn.Module):
         self.isotropic = isotropic
 
         self.unet = UNet(self.input_channels, self.num_classes, self.num_filters, if_last_layer=False).to(device)
-        self.prior = IsotropicGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, isotropic=isotropic).to(device)
-        self.posterior = IsotropicGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, isotropic=isotropic, posterior=True).to(device)
+        if not axis_aligned:
+            self.prior = IsotropicGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, isotropic=isotropic).to(device)
+            self.posterior = IsotropicGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, isotropic=isotropic, posterior=True).to(device)
+        else:
+            self.prior = AxisAlignedGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim,
+                                           self.initializers, isotropic=isotropic).to(device)
+            self.posterior = AxisAlignedGaussian(self.input_channels, self.num_filters, self.no_convs_per_block,
+                                                self.latent_dim, self.initializers, isotropic=isotropic, posterior=True).to(device)
         self.fcomb = Fcomb(self.num_filters, self.latent_dim, self.input_channels,
                            self.num_classes, self.no_convs_fcomb, self.initializers, use_tile=True, device=device).to(device)
 
