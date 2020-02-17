@@ -40,7 +40,7 @@ class ProbabilisticUnet(nn.Module):
         self.fcomb = Fcomb(self.num_filters, self.latent_dim, self.input_channels,
                            self.num_classes, self.no_convs_fcomb, self.initializers, use_tile=True, device=device).to(device)
 
-    def forward(self, patch, segm, training=True):
+    def forward(self, patch, segm, training=False):
         """
         Construct prior latent space for patch and run patch through UNet,
         in case training is True also construct posterior latent space
@@ -120,7 +120,8 @@ class ProbabilisticUnet(nn.Module):
 
         return (self.reconstruction_loss + self.beta * self.kl)/patch.size(0)
 
-    def visual_recon(self, num_sample=10, manifold_visualisation=False):
+    def output_predict_tensor(self, num_sample=10, manifold_visualisation=False, patch=None):
+        assert type(patch) != None
         r = []
         if manifold_visualisation == True:
             assert self.latent_dim == 2
@@ -138,7 +139,7 @@ class ProbabilisticUnet(nn.Module):
         else:
             for samp in range(num_sample):
                 # z_posterior = self.prior_z.rsample()
-                z_posterior = self.posterior_z
+                z_posterior = self.prior.forward(patch)
                 reconstruction = self.reconstruct(z_posterior=z_posterior).cpu().numpy()
                 r.append(reconstruction)
             return r

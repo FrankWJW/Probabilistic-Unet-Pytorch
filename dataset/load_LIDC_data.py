@@ -15,10 +15,11 @@ class LIDC_IDRI(Dataset):
     labels = []
     series_uid = []
 
-    def __init__(self, dataset_location, joint_transform=None, input_transform=None, target_transform=None):
+    def __init__(self, dataset_location, joint_transform=None, input_transform=None, target_transform=None, random=True):
         self.input_transform = input_transform
         self.joint_transform = joint_transform
         self.target_transform = target_transform
+        self.random = random
         max_bytes = 2 ** 31 - 1
         data = {}
         for file in os.listdir(dataset_location):
@@ -54,7 +55,10 @@ class LIDC_IDRI(Dataset):
         image = self.images[index]
 
         # Randomly select one of the four labels for this image
-        label = self.labels[index][random.randint(0, 3)].astype(float)
+        if self.random:
+            label = self.labels[index][random.randint(0, 3)].astype(float)
+        else:
+            label = self.labels[index][0].astype(float)
         if self.input_transform is not None:
             image = np.uint8(image*255)
             label = np.uint8(label*255)

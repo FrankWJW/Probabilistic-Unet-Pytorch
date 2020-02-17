@@ -5,7 +5,7 @@ from torch.utils.data.sampler import SubsetRandomSampler, SequentialSampler
 import math
 
 class Dataloader():
-    def __init__(self, dataset, batch_size, small=False, random=False):
+    def __init__(self, dataset, batch_size, small=False, shuffle_indices=False):
         self.batch_size = batch_size
         self.dataset = dataset
         # take small amount of data for fast training
@@ -14,7 +14,7 @@ class Dataloader():
         else:
             self.dataset_size = len(dataset)
         self.indices = list(range(self.dataset_size))
-        if random:
+        if shuffle_indices:
             np.random.shuffle(self.indices)
         self.split = int(np.floor(0.1 * self.dataset_size))
         self.train_indices = self.indices[self.split:]
