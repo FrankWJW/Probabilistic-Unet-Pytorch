@@ -8,14 +8,14 @@ import utils.joint_transforms as joint_transforms
 
 print('loading configs.........')
 # --------------------------------Data directory---------------------------------------------------
-data_dir = '/home/jw7u18/LIDC/data'
-dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
+# data_dir = '/home/jw7u18/LIDC/data'
+# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
 # data_dir = '/home/jw7u18/LIDC/data'
 # dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
-# data_dir = 'D:\Datasets\LIDC\data'
-# dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+data_dir = 'D:\Datasets\LIDC\data'
+dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
 # -------------------------------------model dir----------------------------------------------------
 model_eval = 'checkpoint_probUnet_epoch240_latenDim6_totalLoss28384.866355895996_total_reg_loss154254.47900390625_isotropic_False.pth.tar'
@@ -38,7 +38,7 @@ all_experts = False
 eval_model = os.path.join(dir_checkpoint, model_eval)
 # --------------------------------------------------------hyper para-----------------------------------------------
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-num_filters = [64, 128, 256, 512, 1024]
+num_filters = [32, 64, 128, 192]
 batch_size = 32
 lr = 1e-4
 weight_decay = 1e-5
@@ -49,11 +49,11 @@ partial_data = False
 resume = False
 latent_dim = 6
 beta = 10
-isotropic = False
+# isotropic = False
 
 # kaiming_normal and orthogonal
-# initializers = {'w': 'kaiming_normal', 'b': 'normal'}
-initializers = {'w':None, 'b':None}
+initializers = {'w': 'kaiming_normal', 'b': 'normal'}
+# initializers = {'w':None, 'b':None}
 
 # Transforms
 joint_transfm = joint_transforms.Compose([joint_transforms.RandomHorizontallyFlip(),
