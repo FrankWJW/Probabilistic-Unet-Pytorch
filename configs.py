@@ -42,6 +42,7 @@ weight_decay = 1e-5
 epochs = 600
 
 # prob unet only
+axis_aligned = True # axis-aligned gaussian or isotropic gaussian
 partial_data = False
 resume = False
 latent_dim = 6

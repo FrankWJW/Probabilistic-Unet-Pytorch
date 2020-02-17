@@ -22,7 +22,7 @@ class ProbabilisticUnet(nn.Module):
     """
 
     def __init__(self, input_channels=1, num_classes=1, num_filters=[32,64,128,192], latent_dim=6, no_convs_fcomb=4, beta=10.0, initializers=None, isotropic=False,
-                 device='cuda', axis_aligned = True):
+                 device='cuda', axis_aligned=True):
         super(ProbabilisticUnet, self).__init__()
         self.input_channels = input_channels
         self.num_classes = num_classes
