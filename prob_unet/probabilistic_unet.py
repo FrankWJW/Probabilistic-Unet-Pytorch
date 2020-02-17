@@ -36,14 +36,8 @@ class ProbabilisticUnet(nn.Module):
         self.isotropic = isotropic
 
         self.unet = UNet(self.input_channels, self.num_classes, self.num_filters, if_last_layer=False).to(device)
-        if not axis_aligned:
-            self.prior = IsotropicGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, isotropic=isotropic).to(device)
-            self.posterior = IsotropicGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, isotropic=isotropic, posterior=True).to(device)
-        else:
-            self.prior = AxisAlignedGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim,
-                                           self.initializers, isotropic=isotropic).to(device)
-            self.posterior = AxisAlignedGaussian(self.input_channels, self.num_filters, self.no_convs_per_block,
-                                                self.latent_dim, self.initializers, isotropic=isotropic, posterior=True).to(device)
+        self.prior = IsotropicGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, isotropic=isotropic).to(device)
+        self.posterior = IsotropicGaussian(self.input_channels, self.num_filters, self.no_convs_per_block, self.latent_dim, self.initializers, isotropic=isotropic, posterior=True).to(device)
         self.fcomb = Fcomb(self.num_filters, self.latent_dim, self.input_channels,
                            self.num_classes, self.no_convs_fcomb, self.initializers, use_tile=True, device=device).to(device)
 
