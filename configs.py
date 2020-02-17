@@ -15,8 +15,8 @@ dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 # dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
 # -------------------------------------model dir----------------------------------------------------
-model_eval = 'checkpoint_probUnet_epoch240_latenDim6_totalLoss28384.866355895996_total_reg_loss154254.47900390625_isotropic_False.pth.tar'
-resume_model = ''
+model_eval = ''
+resume_model = 'checkpoint_probUnet_epoch90_latenDim6_totalLoss38455.22733211517num_filters[32, 64, 128, 192]batch_size32_.pth.tar'
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstructions\\' + model_eval[:-8]
 
 
@@ -44,7 +44,7 @@ epochs = 600
 # prob unet only
 axis_aligned = True # axis-aligned gaussian or isotropic gaussian
 partial_data = False
-resume = False
+resume = True
 latent_dim = 6
 beta = 10
 # isotropic = False
