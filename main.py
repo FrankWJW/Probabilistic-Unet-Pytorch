@@ -23,7 +23,7 @@ if __name__ == '__main__':
     if train_or_eval == 'eval':
         print('evaluating.....')
         net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=num_filters, latent_dim=latent_dim,
-                                no_convs_fcomb=4, beta=beta, initializers=initializers, device=device, axis_aligned=axis_aligned).to(device)
+                                no_convs_fcomb=4, beta=beta, initializers=initializers, device=device).to(device)
         # for s in num_sample:
         #     generalised_energy_distance(dataloader, net, s)
         output_predict_img(dataloader, net)

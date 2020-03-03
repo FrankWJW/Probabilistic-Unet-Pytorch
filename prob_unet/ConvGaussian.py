@@ -37,41 +37,6 @@ class IsotropicGaussian(nn.Module):
         else:
             self.conv_layer.apply(init_weights)
 
-    # def forward(self, input, segm=None):
-    #
-    #     #If segmentation is not none, concatenate the mask to the channel axis of the input
-    #     if segm is not None:
-    #         self.show_img = input
-    #         self.show_seg = segm
-    #         input = torch.cat((input, segm), dim=1)
-    #         self.show_concat = input
-    #         self.sum_input = torch.sum(input)
-    #
-    #     encoding = self.encoder(input)
-    #     self.show_enc = encoding
-    #
-    #     #We only want the mean of the resulting hxw image
-    #     encoding = torch.mean(encoding, dim=2, keepdim=True)
-    #     encoding = torch.mean(encoding, dim=3, keepdim=True)
-    #
-    #     #Convert encoding to 2 x latent dim and split up for mu and log_sigma
-    #     mu_log_sigma = self.conv_layer(encoding)
-    #
-    #     #We squeeze the second dimension twice, since otherwise it won't work when batch size is equal to 1
-    #     mu_log_sigma = torch.squeeze(mu_log_sigma, dim=2)
-    #     mu_log_sigma = torch.squeeze(mu_log_sigma, dim=2)
-    #
-    #     mu = mu_log_sigma[:,:self.latent_dim]
-    #     if not self.isotropic:
-    #         log_sigma = mu_log_sigma[:, self.latent_dim:]
-    #     else:
-    #         log_sigma = mu_log_sigma[:,self.latent_dim:]
-    #         log_sigma = torch.mean(log_sigma, dim=1).view(-1, 1).repeat(1, 6)
-    #
-    #     #This is a multivariate normal with diagonal covariance matrix sigma
-    #     #https://github.com/pytorch/pytorch/pull/11178
-    #     dist = Independent(Normal(loc=mu, scale=torch.exp(log_sigma)),1)
-    #     return dist
     def forward(self, input, segm=None):
         if segm is not None:
             self.show_img = input
@@ -101,6 +66,7 @@ class IsotropicGaussian(nn.Module):
         z = eps * std + mu
 
         return z
+
 
 class AxisAlignedGaussian(nn.Module):
     """

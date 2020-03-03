@@ -15,7 +15,7 @@ from eval import visualise_manifold, dir_check, output_predict_img, generalised_
 def train(data):
     print(f"initialisation: {initializers['w']}"
           f"\nsavingCKPT: {save_ckpt}\nlr_initial: {lr}\nbatchSize: {batch_size}\nLatent_dim:{latent_dim}"
-          f"\nbeta:{beta}\nnum_filters:{num_filters}\naxis_aligned:{axis_aligned}")
+          f"\nbeta:{beta}\nnum_filters:{num_filters}")
     net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=num_filters,
                             latent_dim=latent_dim, no_convs_fcomb=4, beta=beta, initializers=initializers, device=device).to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
@@ -64,7 +64,7 @@ def train(data):
                 'optimizer': optimizer.state_dict(),
                 'scheduler': scheduler.state_dict(),
             }, dir_checkpoint, f'checkpoint_probUnet_epoch{epoch}_latenDim{latent_dim}_totalLoss{total_loss}'
-                               f'num_filters{num_filters}batch_size{batch_size}axis_aligned{axis_aligned}.pth.tar')
+                               f'num_filters{num_filters}batch_size{batch_size}.pth.tar')
 
 def save_checkpoint(state, save_path, filename):
     filename = os.path.join(save_path, filename)

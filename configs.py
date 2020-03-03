@@ -8,21 +8,21 @@ import utils.joint_transforms as joint_transforms
 
 print('loading configs.........')
 # --------------------------------Data directory---------------------------------------------------
-data_dir = '/home/jw7u18/LIDC/data'
-dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
+# data_dir = '/home/jw7u18/LIDC/data'
+# dir_checkpoint = '/home/jw7u18/probabilistic_unet_output/training_ckpt'
 
-# data_dir = 'D:\Datasets\LIDC\data'
-# dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
+data_dir = 'D:\Datasets\LIDC\data'
+dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
 # -------------------------------------model dir----------------------------------------------------
-model_eval = ''
-resume_model = 'checkpoint_probUnet_epoch90_latenDim6_totalLoss38455.22733211517num_filters[32, 64, 128, 192]batch_size32_.pth.tar'
+model_eval = 'checkpoint_probUnet_epoch30_latenDim6_totalLoss1850237.5825195312num_filters[32, 64, 128, 192]batch_size32.pth.tar'
+resume_model = 'checkpoint_probUnet_epoch30_latenDim6_totalLoss1850237.5825195312num_filters[32, 64, 128, 192]batch_size32.pth.tar'
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstructions\\' + model_eval[:-8]
 
 
 # check this setting to design to perform train or evaluation before you go
 # input str type 'train' / 'eval'
-train_or_eval = 'train'
+train_or_eval = 'eval'
 
 # ------------------------------------------training setting---------------------------------------------------
 save_ckpt = True
@@ -42,7 +42,6 @@ weight_decay = 1e-5
 epochs = 600
 
 # prob unet only
-axis_aligned = False # axis-aligned gaussian or isotropic gaussian
 partial_data = False
 resume = True
 latent_dim = 6
