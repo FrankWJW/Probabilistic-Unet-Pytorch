@@ -15,19 +15,20 @@ data_dir = 'D:\Datasets\LIDC\data'
 dir_checkpoint = 'D:\Probablistic-Unet-Pytorch-out\ckpt'
 
 # -------------------------------------model dir----------------------------------------------------
-model_eval = 'checkpoint_probUnet_epoch30_latenDim6_totalLoss1850237.5825195312num_filters[32, 64, 128, 192]batch_size32.pth.tar'
-resume_model = 'checkpoint_probUnet_epoch30_latenDim6_totalLoss1850237.5825195312num_filters[32, 64, 128, 192]batch_size32.pth.tar'
+model_eval = ''
+resume_model = ''
 recon_dir = 'D:\\Probablistic-Unet-Pytorch-out\\reconstructions\\' + model_eval[:-8]
 
 
 # check this setting to design to perform train or evaluation before you go
 # input str type 'train' / 'eval'
-train_or_eval = 'eval'
+train_or_eval = 'train'
 
 # ------------------------------------------training setting---------------------------------------------------
+resume = False
 save_ckpt = True
 shuffle_indices = False
-random = True
+random = True   # Randomly select one of the four labels for this image
 r_model = os.path.join(dir_checkpoint, resume_model)
 # -------------------------------------evaluation setting------------------------------------------------------------
 num_sample = [1, 4, 8, 16, 50, 100]
@@ -35,15 +36,18 @@ all_experts = False
 eval_model = os.path.join(dir_checkpoint, model_eval)
 # --------------------------------------------------------hyper para-----------------------------------------------
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-num_filters = [32, 64, 128, 192]
+num_filters = [16, 32]
 batch_size = 32
 lr = 1e-4
 weight_decay = 1e-5
 epochs = 600
 
+# unet setting
+num_conv_blocks = 1
 # prob unet only
+num_convs_per_block = num_conv_blocks
+num_convs_fcomb = 1
 partial_data = False
-resume = True
 latent_dim = 6
 beta = 10
 # isotropic = False

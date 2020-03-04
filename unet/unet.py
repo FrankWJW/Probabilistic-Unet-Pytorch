@@ -8,7 +8,7 @@ from torchsummary import summary
 
 
 class UNet(nn.Module):
-    def __init__(self, in_channels, n_classes, num_filters=[32,64], if_last_layer=True, bilinear=True, initializers = None):
+    def __init__(self, in_channels, n_classes, num_filters=[32,64,128,192], if_last_layer=True, bilinear=True, initializers = None):
         super(UNet, self).__init__()
         self.in_channels = in_channels
         self.n_classes = n_classes
@@ -17,7 +17,7 @@ class UNet(nn.Module):
         self.if_last_layer = if_last_layer
         self.initializers = initializers
 
-        self.inc = SequentialConv(self.in_channels, 32)
+        self.inc = SequentialConv(self.in_channels, self.n_filters[0])
         layers_down = []
         layers_up = []
         for i in range(len(self.n_filters) - 1):
@@ -29,7 +29,7 @@ class UNet(nn.Module):
         self.down = nn.ModuleList(layers_down)
         self.up = nn.ModuleList(layers_up)
 
-        self.outc = OutConv(32, n_classes)
+        self.outc = OutConv(self.n_filters[0], n_classes)
 
     def forward(self, x):
         x1 = self.inc(x)

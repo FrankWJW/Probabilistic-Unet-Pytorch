@@ -104,7 +104,7 @@ if __name__ == '__main__':
                         input_transform=input_transfm
                         , target_transform=target_transfm)
     dataloader = Dataloader(dataset, batch_size, small=partial_data)
-    net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters=[32, 64, 128, 192], latent_dim=latent_dim,
+    net = ProbabilisticUnet(input_channels=1, num_classes=1, num_filters_=num_filters, latent_dim=latent_dim,
                             no_convs_fcomb=4, beta=beta, initializers=initializers, device=device).to(device)
     # for s in num_sample:
     #     generalised_energy_distance(dataloader, net, s)

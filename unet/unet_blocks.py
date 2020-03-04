@@ -2,23 +2,19 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from utils.utils import init_weights,init_weights_orthogonal_normal
+from configs import num_conv_blocks
 
 initializers = {'w':'orthogonal', 'b':'normal'}
 
 class SequentialConv(nn.Module):
     def __init__(self, in_channels, out_channels):
         super().__init__()
-        self.layers = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-            # nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
-            # nn.BatchNorm2d(out_channels),
-            # nn.ReLU(inplace=True),
-        )
+        conv_blocks = []
+        for i in range(num_conv_blocks):
+            conv_blocks.append(nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1))
+            conv_blocks.append(nn.BatchNorm2d(out_channels))
+            conv_blocks.append(nn.ReLU(inplace=True))
+        self.layers = nn.Sequential(*conv_blocks)
         if initializers['w'] == 'orthogonal':
             self.layers.apply(init_weights_orthogonal_normal)
         else:
